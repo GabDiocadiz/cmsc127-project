@@ -1,4 +1,5 @@
-# CMSC127 Project: Food Review Information System
+# CMSC 127
+### Project: Food Review Information System
 
 ## Introduction
 This project is a Food Review Information System designed to record and manage data on food reviews and food items from various food establishments. The system is implemented using Python and MySQL, providing a flexible and realistic database design to meet the project requirements.
