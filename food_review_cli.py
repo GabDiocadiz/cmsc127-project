@@ -1,5 +1,6 @@
 import mysql.connector
 import datetime
+from tabulate import tabulate  # Import tabulate library
 from os import system, name
 import datetime
 
@@ -268,10 +269,17 @@ class FoodReviewCLI:
         try:
             self.cursor.execute(sql, values)
             results = self.cursor.fetchall()
-            self.display_review_results(results)  # Call the improved display_review_results function
+            formatted_reviews = self.display_review_results(results)  # Call display_review_results
+
+            # Print reviews only if formatted_reviews is not None
+            if formatted_reviews:
+                print("Would you like to see the formatted reviews? (y/n)")
+                show_reviews = "y"
+                if show_reviews.lower() == 'y':
+                    print(formatted_reviews)
+            return  # Avoid unintended continuation
         except Exception as e:
             print(f"An error occurred during search: {e}")
-
 
     def display_review_results(self, results):
         """
@@ -279,38 +287,43 @@ class FoodReviewCLI:
 
         Args:
             results (list): A list of tuples containing review data.
+
+        Returns:
+            str: A formatted string representing the review table (or an empty string if no reviews found).
         """
 
         if results:
-            print("\nSearch Results:")
+            # Prepare review data as a list of dictionaries
+            formatted_data = []
             for review in results:
-                # Assuming review data includes columns like 'text', 'rating', 'review_date', etc.
-                # Adjust column names and displayed data based on your actual schema
-
-                # Use string formatting to create a single review string
-                formatted_review = f"""
-                Review Text: {review[1]}
-                Rating: {review[2]}
-                Review Date: {review[3]}
-                """
-
-                # Check for optional food information (if foodno is not null)
+                review_dict = {
+                    "Review Text": review[1],
+                    "Rating": review[2],
+                    "Date": review[3],
+                }
+                # Check for food name directly in review data (assuming a column 'foodname' exists)
                 if review[4] is not None:
-                    # Assuming you have a separate function to retrieve food details based on foodno
-                    food_name = self.get_food_name(review[4])
-                    formatted_review += f"Food: {food_name}\n"
+                    review_dict["Food"] = review[4]  # Use the food name directly
                 else:
-                    formatted_review += "Food: Not specified\n"
+                    review_dict["Food"] = "Not specified"
+                # Add establishment information
+                review_dict["Establishment"] = self.get_establishment_name(review[5])
+                formatted_data.append(review_dict)
 
-                # Establishment information should always be available based on schema
-                formatted_review += f"Establishment: {self.get_establishment_name(review[5])}\n"
+            # Create table headers as a dictionary (adjust as needed)
+            table_headers = {
+                "Review Text": "Review Text",
+                "Rating": "Rating",
+                "Date": "Date",
+                "Food": "Food",
+                "Establishment": "Establishment",
+            }
 
-                print(formatted_review)  # Print the complete formatted review string
-                print("-" * 40)  # Optional separator between reviews
+            # Use tabulate to format the data as a table string
+            return tabulate(formatted_data, headers=table_headers, tablefmt="grid")
         else:
-            print("No reviews found for your search criteria.")
-
-        
+            return ""  # Indicate no reviews found (empty string)
+ 
     def get_food_name(self, foodno):
         """
         Retrieves the name of a food item from the 'food' table based on its 'foodno'.
