@@ -484,6 +484,10 @@ class FoodReviewCLI:
         elif report_choice == 2:
             clear()
             self.show_reviews()
+        elif report_choice == 3:
+            self.show_food_items_from_establishment()
+        elif report_choice == 4:
+            self.show_reviews_from_establishment_and_food_type()
         elif report_choice == 7:
             clear()
             self.view_food_from_est_by_price()
@@ -514,7 +518,25 @@ class FoodReviewCLI:
             print(f"{item[0]:<3} | {item[1]:<20} | {item[2]:<6} | {item[3]}  | {item[4]:<7} | {item[5]:<6} | {item[6]:<3}")
         print("\n")
 
-    def view_food_from_est_by_price(self):
+    def show_food_items_from_establishment(self):
+        try:
+            estno = int(input("Enter establishment number: "))
+            sql = """SELECT food.foodno, food.foodname, food.price, food.foodtype
+                    FROM food
+                    WHERE food.estno = %s"""
+            self.cursor.execute(sql, (estno,))
+            food_items = self.cursor.fetchall()
+            if not food_items:
+                print("No food items found for this establishment.")
+            else:
+                print("{:<10} {:<30} {:<10} {:<15}".format("Food No", "Food Name", "Price", "Type"))
+                print("-" * 65)
+                for item in food_items:
+                    print("{:<10} {:<30} {:<10} {:<15}".format(item[0], item[1], item[2], item[3]))
+        except ValueError:
+            print("Invalid input. Please enter a valid number.")
+        except mysql.connector.Error as err:
+            print(f"Database error: {err}")    def view_food_from_est_by_price(self):
         self.show_food_establishments()
         est_number = int(input("From what establishment would you like to browse by price: "))
         cursor = self.connection.cursor()
@@ -540,5 +562,5 @@ class FoodReviewCLI:
 ################################
 
 # Main Menu System
-cli = FoodReviewCLI("localhost", "root", "killjoy", "foodproject")
+cli = FoodReviewCLI("localhost", "root", "gddiocadiz", "foodproject")
 cli.main_menu()
