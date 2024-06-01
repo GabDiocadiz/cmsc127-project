@@ -74,9 +74,7 @@ class FoodReviewCLI:
                 reviewno = int(input("Enter review ID to delete: "))
                 self.delete_review(reviewno)
             elif choice == '4':
-                # Allow searching by various criteria (text, rating, establishment, etc.)
-                # Implement search logic using appropriate SQL queries
-                print("Search functionality for reviews is not yet implemented.")
+                self.search_reviews()
             elif choice == '5':
                 pass  # Back to main menu
             else:
@@ -235,6 +233,87 @@ class FoodReviewCLI:
 
     # Function for the food review management
     # Review Management Functions
+
+    def search_reviews(self):
+    print("\nSearch Reviews:")
+    print("1. Search by Text")
+    print("2. Search by Rating")
+    print("3. Search by Date Range")
+    print("4. Search by Establishment")
+    print("5. Search by Food Item")
+    print("6. Back to Menu")
+
+    choice = input("Enter your choice: ")
+
+    if choice == '1':
+        search_text = input("Enter search text: ")
+        # Implement search by text using LIKE operator (replace with your actual query)
+        sql = "SELECT * FROM establishment_reviews WHERE text LIKE %s"
+        values = ("%" + search_text + "%",)  # Escape wildcards if needed
+        self.cursor.execute(sql, values)
+        results = self.cursor.fetchall()
+        self.display_review_results(results)
+    elif choice == '2':
+        while True:
+            try:
+                min_rating = int(input("Enter minimum rating (1-5): "))
+                max_rating = int(input("Enter maximum rating (1-5): "))
+                if 1 <= min_rating <= 5 and 1 <= max_rating <= 5 and min_rating <= max_rating:
+                    # Implement search by rating range
+                    sql = "SELECT * FROM establishment_reviews WHERE rating BETWEEN %s AND %s"
+                    values = (min_rating, max_rating)
+                    self.cursor.execute(sql, values)
+                    results = self.cursor.fetchall()
+                    self.display_review_results(results)
+                    break
+                else:
+                    print("Invalid rating range. Please enter values between 1 and 5, with min <= max.")
+            except ValueError:
+                print("Invalid input. Please enter numbers.")
+    elif choice == '3':
+        from_date = input("Enter start date (DD-Month-YYYY): ")
+        to_date = input("Enter end date (DD-Month-YYYY): ")
+        # Implement search by date range (replace with your actual query)
+        sql = "SELECT * FROM establishment_reviews WHERE review_date BETWEEN %s AND %s"
+        values = (from_date, to_date)
+        self.cursor.execute(sql, values)
+        results = self.cursor.fetchall()
+        self.display_review_results(results)
+    elif choice == '4':
+        est_name = input("Enter establishment name (partial match): ")
+        # Implement search by establishment using JOIN or subquery (replace with your actual query)
+        # Assuming you have a table 'establishments' with an 'est_name' column
+        sql = """
+        SELECT er.*
+        FROM establishment_reviews er
+        INNER JOIN establishments e ON er.est_id = e.est_id
+        WHERE e.est_name LIKE %s
+        """
+        values = ("%" + est_name + "%",)
+        self.cursor.execute(sql, values)
+        results = self.cursor.fetchall()
+        self.display_review_results(results)
+    elif choice == '5':
+        food_name = input("Enter food item name (partial match): ")
+        # Implement search by food item using JOIN or subquery (replace with your actual query)
+        # Assuming you have a table 'food_items' with an 'item_name' column
+        sql = """
+        SELECT er.*
+        FROM establishment_reviews er
+        INNER JOIN review_food_items rfi ON er.review_id = rfi.review_id
+        INNER JOIN food_items fi ON rfi.food_item_id = fi.food_item_id
+        WHERE fi.item_name LIKE %s
+        """
+        values = ("%" + food_name + "%",)
+        self.cursor.execute(sql, values)
+        results = self.cursor.fetchall()
+        self.display_review_results(results)
+    elif choice == '6':
+        pass  # Back to menu
+    else:
+        print("Invalid choice. Please try again.")
+        self.search_reviews()  # Recursively call for valid input
+
     def add_review(self, text, rating, date, foodno, estno, userno):
         try:
             # Validate rating is within range (1-5)
