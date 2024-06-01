@@ -489,6 +489,10 @@ class FoodReviewCLI:
             self.show_food_items_from_establishment()
         elif report_choice == 4:
             self.show_food_items_from_establishment_and_food_type()
+        elif report_choice == 5:
+            self.show_reviews_within_month()
+        elif report_choice == 6:
+            self.show_establishments_with_high_average_rating()
         elif report_choice == 7:
             clear()
             self.view_food_from_est_by_price()
@@ -575,6 +579,36 @@ class FoodReviewCLI:
                 for item in food_items:
                     price = f"{item[2]:.2f}"
                     print("{:<10} {:<30} {:<10} {:<15} {:<10}".format(item[0], item[1], item[3], item[4], item[5]))
+        except ValueError:
+            print("Invalid input. Please enter valid numbers.")
+        except mysql.connector.Error as err:
+            print(f"Database error: {err}")
+
+    # 5. View all reviews made within a month for an establishment or a food item;
+    def show_reviews_within_month(self):
+        try:
+            estno = int(input("Enter establishment number (or 0 to skip): "))
+            foodno = 0
+            if estno == 0:
+                foodno = int(input("Enter food item number: "))
+            month = int(input("Enter month (1-12): "))
+
+            if estno == 0 and foodno == 0:
+                print("You must enter either an establishment number or a food item number.")
+                return
+
+            sql = "SELECT * FROM review WHERE (estno = %s OR foodno = %s) AND MONTH(date) = %s"
+            self.cursor.execute(sql, (estno, foodno, month))
+            reviews = self.cursor.fetchall()
+
+            if not reviews:
+                print("No reviews found for the given criteria.")
+            else:
+                print("{:<10} {:<50} {:<10} {:<15} {:<10} {:<10} {:<10}".format("Review No", "Text", "Rating", "Date", "Food No", "Est No", "User No"))
+                print("-" * 120)
+                for review in reviews:
+                    review_date = review[3].strftime('%Y-%m-%d')
+                    print("{:<10} {:<50} {:<10} {:<15} {:<10} {:<10} {:<10}".format(review[0], review[1], review[2], review_date, review[4], review[5], review[6]))
         except ValueError:
             print("Invalid input. Please enter valid numbers.")
         except mysql.connector.Error as err:
