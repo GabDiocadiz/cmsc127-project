@@ -26,6 +26,12 @@ class FoodReviewCLI:
             print(f"Error connecting to database: {err}")
             exit()
 
+    # Function to update the average rating per establishment
+    def averating(self):
+        cursor = self.connection.cursor()
+        cursor.execute("UPDATE establishment SET averating = COALESCE((SELECT averating FROM (SELECT estno, AVG(rating) AS averating FROM review GROUP BY estno) sq WHERE establishment.estno = sq.estno), 0)")
+        cursor.execute("UPDATE food SET averating = COALESCE((SELECT averating FROM (SELECT foodno, AVG(rating) AS averating FROM review GROUP BY foodno) sq WHERE food.foodno = sq.foodno), 0)")
+
     # Function for the main menu
     def main_menu(self):
         while True:
@@ -79,6 +85,7 @@ class FoodReviewCLI:
             estno = int(input("Enter establishment number: "))
             userno = int(input("Enter user number: "))
             self.add_review(text, rating, date, estno, userno)
+            self.averating()
             input("Press Enter to proceed back to main menu")
         elif choice == '2':
             # Get review ID for update
@@ -96,6 +103,7 @@ class FoodReviewCLI:
                         new_rating = int(input("Enter new rating (1-5): "))
                         if 1 <= new_rating <= 5:
                             self.update_review_rating(new_rating, reviewno)
+                            self.averating()
                             break
                         else:
                             print("Invalid rating. Please enter a number between 1 and 5.")
@@ -113,6 +121,7 @@ class FoodReviewCLI:
             # Get review ID for deletion
             reviewno = int(input("Enter review ID to delete: "))
             self.delete_review(reviewno)
+            self.averating()
         elif choice == '4':
             # Allow searching by various criteria (text, rating, establishment, etc.)
             # Implement search logic using appropriate SQL queries
@@ -138,6 +147,7 @@ class FoodReviewCLI:
             # Get user input for establishment name
             estname = input("Enter establishment name: ")
             self.add_establishment(estname)
+            self.averating()
         elif choice == '2':
             # Get existing establishment name for update
             estname = input("Enter establishment name to update: ")
@@ -182,6 +192,7 @@ class FoodReviewCLI:
             foodtype = input("Enter food type: ")
             estno = int(input("Enter establishment number: "))
             self.add_food_item(foodname, price, foodtype, estno)
+            self.averating()
         elif choice == '2':
             # Get food item name for price update
             foodname = input("Enter food item name to update price: ")
@@ -772,4 +783,5 @@ class FoodReviewCLI:
 
 # Main Menu System
 cli = FoodReviewCLI("localhost", "root", "killjoy", "foodproject")
+cli.averating()
 cli.main_menu()
