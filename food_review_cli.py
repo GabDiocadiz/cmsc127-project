@@ -66,51 +66,9 @@ class FoodReviewCLI:
 
         if review_type.lower() == "establishment":
             if choice == '1':
-                # Get user input for review details (text, rating, date, estno, userno)
-                text = input("Enter review text: ")
-                while True:
-                    try:
-                        rating = int(input("Enter rating (1-5): "))
-                        if 1 <= rating <= 5:
-                            break
-                        else:
-                            print("Invalid rating. Please enter a number between 1 and 5.")
-                    except ValueError:
-                        print("Invalid input. Please enter a number.")
-                date = input("Enter date (DD-Month-YYYY): ")  # Adjust date format if needed
-                foodno = ("NULL")
-                estno = int(input("Enter establishment number: "))
-                userno = int(input("Enter user number: "))
-                self.add_review(text, rating, date, foodno, estno, userno)
+                self.reviews_est()
             elif choice == '2':
-                # Get review ID for update
-                reviewno = int(input("Enter review ID to update: "))
-                # Prompt user for specific update (text, rating, estno, foodno)
-                update_choice = input("Update (text/rating/estno/foodno) or 'back' to menu: ")
-                if update_choice.lower() == 'back':
-                    self.review_management_menu()
-                elif update_choice.lower() == 'text':
-                    new_text = input("Enter new review text: ")
-                    self.update_review_text(new_text, reviewno)
-                elif update_choice.lower() == 'rating':
-                    while True:
-                        try:
-                            new_rating = int(input("Enter new rating (1-5): "))
-                            if 1 <= new_rating <= 5:
-                                self.update_review_rating(new_rating, reviewno)
-                                break
-                            else:
-                                print("Invalid rating. Please enter a number between 1 and 5.")
-                        except ValueError:
-                            print("Invalid input. Please enter a number.")
-                elif update_choice.lower() in ('estno', 'foodno'):
-                    if update_choice.lower() == 'estno':
-                        print("Update establishment number is not currently supported.")
-                    else:
-                        print("Update food item number is not currently supported.")
-                    # Implement update_review_est_food_no function when supported
-                else:
-                    print("Invalid choice. Please try again.")
+                self.update_establishment()
             elif choice == '3':
                 # Get review ID for deletion
                 reviewno = int(input("Enter review ID to delete: "))
@@ -308,6 +266,54 @@ class FoodReviewCLI:
             print(f"Error adding review: {e}")
         except mysql.connector.Error as err:
             print(f"Error adding review: {err}")
+
+    def reviews_est(self):
+    # Get user input for review details (text, rating, date, estno, userno)
+        text = input("Enter review text: ")
+        while True:
+            try:
+                rating = int(input("Enter rating (1-5): "))
+                if 1 <= rating <= 5:
+                    break
+                else:
+                    print("Invalid rating. Please enter a number between 1 and 5.")
+            except ValueError:
+                print("Invalid input. Please enter a number.")
+        date = input("Enter date (DD-Month-YYYY): ")  # Adjust date format if needed
+        foodno = ("NULL")
+        estno = int(input("Enter establishment number: "))
+        userno = int(input("Enter user number: "))
+        self.add_review(text, rating, date, foodno, estno, userno)
+
+    def update_reviews_est(self):
+        # Get review ID for update
+        reviewno = int(input("Enter review ID to update: "))
+        # Prompt user for specific update (text, rating, estno, foodno)
+        update_choice = input("Update (text/rating/estno/foodno) or 'back' to menu: ")
+        if update_choice.lower() == 'back':
+            self.review_management_menu()
+        elif update_choice.lower() == 'text':
+            new_text = input("Enter new review text: ")
+            self.update_review_text(new_text, reviewno)
+        elif update_choice.lower() == 'rating':
+            while True:
+                try:
+                    new_rating = int(input("Enter new rating (1-5): "))
+                    if 1 <= new_rating <= 5:
+                        self.update_review_rating(new_rating, reviewno)
+                        break
+                    else:
+                        print("Invalid rating. Please enter a number between 1 and 5.")
+                except ValueError:
+                    print("Invalid input. Please enter a number.")
+        elif update_choice.lower() in ('estno', 'foodno'):
+            if update_choice.lower() == 'estno':
+                print("Update establishment number is not currently supported.")
+            else:
+                print("Update food item number is not currently supported.")
+            # Implement update_review_est_food_no function when supported
+        else:
+            print("Invalid choice. Please try again.")    
 
     def update_review_text(self, new_text, reviewno):
         try:
