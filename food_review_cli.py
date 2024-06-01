@@ -61,31 +61,31 @@ class FoodReviewCLI:
         print("3. Delete Review")
         print("4. Search Reviews")
         print("5. Back to Main Menu")
-        review_type = input("Enter if food/establishment: ")
+
+        review_type = input("Enter if food/establishment (or 'b' to go back): ")
         choice = input("Enter your choice: ")
 
+        if review_type.lower() == "b":
+            return  # Exit function if user chooses 'b'
+
+        # Validate review type (establishment or food)
+        if review_type.lower() not in ("establishment", "food"):
+            print("Invalid review type. Please enter 'establishment' or 'food'.")
+            self.review_management_menu()  # Recursively call for valid input
+            return  # Exit after recursive call
+
+        # Handle menu options based on review type
         if review_type.lower() == "establishment":
-            if choice == '1':
-                self.reviews_est()
-            elif choice == '2':
-                self.update_reviews_est()
-            elif choice == '3':
-                # Get review ID for deletion
-                reviewno = int(input("Enter review ID to delete: "))
-                self.delete_review(reviewno)
-            elif choice == '4':
-                self.search_reviews()
-            elif choice == '5':
-                pass  # Back to main menu
+            self.handle_establishment_review_options(choice)
         elif review_type.lower() == "food":
-            if choice == '1':
-                self.review_food()
-            elif choice == '2':
-                self.update_reviews_food()
-            else:
-                print("Invalid choice. Please try again.")
+            self.handle_food_review_options(choice)
+
+    def handle_establishment_review_options(self, choice):
+        if choice == '1':
+            self.reviews_est()
+        elif choice == '2':
+            self.update_reviews_est()
         elif choice == '3':
-            # Get review ID for deletion
             reviewno = int(input("Enter review ID to delete: "))
             self.delete_review(reviewno)
         elif choice == '4':
@@ -93,9 +93,24 @@ class FoodReviewCLI:
         elif choice == '5':
             pass  # Back to main menu
         else:
-            clear()
             print("Invalid choice. Please try again.")
-            self.review_management_menu()
+            self.handle_establishment_review_options(choice)  # Recursive call for valid input within establishment options
+
+    def handle_food_review_options(self, choice):
+        if choice == '1':
+            self.review_food()
+        elif choice == '2':
+            self.update_reviews_food()
+        elif choice == '3':
+            reviewno = int(input("Enter review ID to delete: "))
+            self.delete_review(reviewno)
+        elif choice == '4':
+            self.search_reviews()
+        elif choice == '5':
+            pass  # Back to main menu
+        else:
+            print("Invalid choice. Please try again.")
+            self.handle_food_review_options(choice)  # Recursive call for valid input within food options
 
     # Function for the food establishment management
     def establishment_management_menu(self):
@@ -195,20 +210,20 @@ class FoodReviewCLI:
         print("1. Search by Text")
         print("2. Search by Rating")
         print("3. Search by Date Range")
-        print("4. Search by Establishment")
-        print("5. Search by Food Item")
+        print("4. Search by Food (Optional)")
+        print("5. Search by Establishment")
         print("6. Back to Menu")
 
         choice = input("Enter your choice: ")
 
         if choice == '1':
             search_text = input("Enter search text: ")
-            # Implement search by text using LIKE operator (replace with your actual query)
-            sql = "SELECT * FROM establishment_reviews WHERE text LIKE %s"
-            values = ("%" + search_text + "%",)  # Escape wildcards if needed
+            # Implement search by text using LIKE operator
+            sql = "SELECT * FROM review WHERE text LIKE %s"
+            values = ("%" + search_text + "%",)
             self.cursor.execute(sql, values)
             results = self.cursor.fetchall()
-            self.show_reviews()
+            self.display_review_results(results)
         elif choice == '2':
             while True:
                 try:
@@ -216,7 +231,7 @@ class FoodReviewCLI:
                     max_rating = int(input("Enter maximum rating (1-5): "))
                     if 1 <= min_rating <= 5 and 1 <= max_rating <= 5 and min_rating <= max_rating:
                         # Implement search by rating range
-                        sql = "SELECT * FROM establishment_reviews WHERE rating BETWEEN %s AND %s"
+                        sql = "SELECT * FROM review WHERE rating BETWEEN %s AND %s"
                         values = (min_rating, max_rating)
                         self.cursor.execute(sql, values)
                         results = self.cursor.fetchall()
@@ -229,38 +244,41 @@ class FoodReviewCLI:
         elif choice == '3':
             from_date = input("Enter start date (DD-Month-YYYY): ")
             to_date = input("Enter end date (DD-Month-YYYY): ")
-            # Implement search by date range (replace with your actual query)
-            sql = "SELECT * FROM establishment_reviews WHERE review_date BETWEEN %s AND %s"
+            # Implement search by date range
+            sql = "SELECT * FROM review WHERE review_date BETWEEN %s AND %s"
             values = (from_date, to_date)
             self.cursor.execute(sql, values)
             results = self.cursor.fetchall()
             self.show_reviews()
         elif choice == '4':
-            est_name = input("Enter establishment name (partial match): ")
-            # Implement search by establishment using JOIN or subquery (replace with your actual query)
-            # Assuming you have a table 'establishments' with an 'est_name' column
-            sql = """
-            SELECT er.*
-            FROM establishment_reviews er
-            INNER JOIN establishments e ON er.est_id = e.est_id
-            WHERE e.est_name LIKE %s
-            """
-            values = ("%" + est_name + "%",)
+            # Optional search by food
+            food_name = input("Enter food name (partial match, or leave blank to skip): ")
+            if food_name:
+                # Search by food name using JOIN (adjust column names if needed)
+                sql = """
+                SELECT r.*
+                FROM review r
+                LEFT JOIN food f ON r.foodno = f.foodno
+                WHERE f.foodname LIKE %s
+                """
+                values = ("%" + food_name + "%",)
+            else:
+                # No food filtering, use original review table selection
+                sql = "SELECT * FROM review"
+                values = ()
             self.cursor.execute(sql, values)
             results = self.cursor.fetchall()
             self.show_reviews()
         elif choice == '5':
-            food_name = input("Enter food item name (partial match): ")
-            # Implement search by food item using JOIN or subquery (replace with your actual query)
-            # Assuming you have a table 'food_items' with an 'item_name' column
+            est_name = input("Enter establishment name (partial match): ")
+            # Search by establishment name using JOIN (adjust column names if needed)
             sql = """
-            SELECT er.*
-            FROM establishment_reviews er
-            INNER JOIN review_food_items rfi ON er.review_id = rfi.review_id
-            INNER JOIN food_items fi ON rfi.food_item_id = fi.food_item_id
-            WHERE fi.item_name LIKE %s
+            SELECT r.*
+            FROM review r
+            INNER JOIN establishment e ON r.estno = e.estno
+            WHERE e.estname LIKE %s
             """
-            values = ("%" + food_name + "%",)
+            values = ("%" + est_name + "%",)
             self.cursor.execute(sql, values)
             results = self.cursor.fetchall()
             self.show_reviews()
@@ -269,6 +287,7 @@ class FoodReviewCLI:
         else:
             print("Invalid choice. Please try again.")
             self.search_reviews()  # Recursively call for valid input
+
 
     def add_review(self, text, rating, date, foodno, estno, userno):
         try:
