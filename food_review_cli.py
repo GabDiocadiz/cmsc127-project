@@ -377,9 +377,6 @@ class FoodReviewCLI:
             # Consider handling different exception types more specifically
             return None  # Or return a different value to indicate an error
 
-
-
-
     def add_review(self, text, rating, date, foodno, estno, userno):
         try:
             # Validate rating is within range (1-5)
@@ -555,18 +552,6 @@ class FoodReviewCLI:
             print(f"Error: {e}")
         except mysql.connector.Error as err:
             print(f"Error updating review rating: {err}")
-
-    def update_review_est_food_no(self, new_estno, new_foodno, reviewno):
-        try:
-            sql = "UPDATE review SET estno = %s, foodno = %s WHERE reviewno = %s"
-            self.cursor.execute(sql, (new_estno, new_foodno, reviewno))
-            self.connection.commit()
-            if self.cursor.rowcount > 0:
-                print("Review establishment & food item number updated successfully!")
-            else:
-                print("Review not found.")
-        except mysql.connector.Error as err:
-            print(f"Error updating review establishment & food item number: {err}")
 
     def delete_review(self, reviewno):
         try:
