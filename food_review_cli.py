@@ -109,6 +109,9 @@ class FoodReviewCLI:
                         print("Update food item number is not currently supported.")
                     # Implement update_review_est_food_no function when supported
                 else:
+                elif update_choice.lower() in ('foodno'):
+                    reviewno = int(input("Enter review ID to delete: "))
+                    self.update_review_food_no(reviewno)
             else:
                 print("Invalid choice. Please try again.")
         elif choice == '3':
