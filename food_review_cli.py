@@ -81,37 +81,7 @@ class FoodReviewCLI:
             if choice == '1':
                 self.review_food()
             elif choice == '2':
-                # Get review ID for update
-                reviewno = int(input("Enter review ID to update: "))
-                # Prompt user for specific update (text, rating, estno, foodno)
-                update_choice = input("Update (text/rating/foodno) or 'back' to menu: ")
-                if update_choice.lower() == 'back':
-                    reviewno = int(input("Enter review ID to delete: "))
-                    self.review_management_menu(reviewno)
-                elif update_choice.lower() == 'text':
-                    new_text = input("Enter new review text: ")
-                    self.update_review_text(new_text, reviewno)
-                elif update_choice.lower() == 'rating':
-                    while True:
-                        try:
-                            new_rating = int(input("Enter new rating (1-5): "))
-                            if 1 <= new_rating <= 5:
-                                self.update_review_rating(new_rating, reviewno)
-                                break
-                            else:
-                                print("Invalid rating. Please enter a number between 1 and 5.")
-                        except ValueError:
-                            print("Invalid input. Please enter a number.")
-                elif update_choice.lower() in ('estno', 'foodno'):
-                    if update_choice.lower() == 'estno':
-                        print("Update establishment number is not currently supported.")
-                    else:
-                        print("Update food item number is not currently supported.")
-                    # Implement update_review_est_food_no function when supported
-                else:
-                elif update_choice.lower() in ('foodno'):
-                    reviewno = int(input("Enter review ID to delete: "))
-                    self.update_review_food_no(reviewno)
+                self.update_reviews_food()
             else:
                 print("Invalid choice. Please try again.")
         elif choice == '3':
