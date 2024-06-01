@@ -762,5 +762,5 @@ class FoodReviewCLI:
 ################################
 
 # Main Menu System
-cli = FoodReviewCLI("localhost", "root", "killjoy", "foodproject")
+cli = FoodReviewCLI("localhost", "root", "gddiocadiz", "foodproject")
 cli.main_menu()
