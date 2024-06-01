@@ -472,7 +472,7 @@ class FoodReviewCLI:
         print("5. View all review made within a specific month")
         print("6. View all establishments with a high average rating")
         print("7. View all food items from an  establishment based on price")
-        print("8. Search for a food item")
+        print("8. Search for a food item from an establishment based on criteria")
         print("9. Exit")
         report_choice = int(input("Enter choice: "))
         if report_choice == 9:
@@ -491,13 +491,16 @@ class FoodReviewCLI:
         elif report_choice == 7:
             clear()
             self.view_food_from_est_by_price()
+        elif report_choice == 8:
+            clear()
+            self.view_food_based_on_criteria()
         else:
             print("Invalid choice. Please try again.")
             self.report_management_menu()
 
         if report_choice in [ 1, 2, 3, 4, 5, 6, 7, 8, 9]:
             input("Press Enter to proceed back to main menu")
-            self.report_management_menu()
+            self.main_menu()
 
     def show_food_establishments(self):
         cursor = self.connection.cursor()
@@ -538,6 +541,7 @@ class FoodReviewCLI:
         except mysql.connector.Error as err:
             print(f"Database error: {err}")
     
+    # Function to view all food items from an establishment based on price
     def view_food_from_est_by_price(self):
         self.show_food_establishments()
         est_number = int(input("From what establishment would you like to browse by price: "))
@@ -545,19 +549,78 @@ class FoodReviewCLI:
         cursor.execute("SELECT * FROM food WHERE estno = %s ORDER BY price", (est_number,))
         food_items = cursor.fetchall()
         print(f"Here are all the food items from establishment #{est_number}.\n")
-        print(f"No  | Food Name    | Rating | Price | Food Type | Est No ")
+        print(f"No  | Food Name    | Rating | Price  | Food Type | Est No ")
         for item in food_items:
             print(f"{item[0]:<3} | {item[1]:<12} | {item[2]:<6} | {item[3]:<5}  | {item[4]:<9} | {item[5]:<6}")
         print("\n")
 
+    # Function to search for food based on criteria
+    def view_food_based_on_criteria(self):
+        self.show_food_establishments()
+        est_number = int(input("From what establishment would you like to browse by price: "))
+        cursor = self.connection.cursor()
+        cursor.execute("SELECT count(estno) FROM establishment")
+        count_est = cursor.fetchone()
+        print("Would you like to browse by ")
+        print ("[1] Price range")
+        print ("[2] Food Type")
+        print ("[3] Price range and food type")
+        sort_choice = int(input("Enter index of choice: "))
+        if sort_choice in [1, 2, 3]:
+            if sort_choice == 1:
+                min_range = (input("What is the lower limit of the price range: "))
+                max_range = (input("What is the upper limit of the price range: "))
+                if min_range.isdigit() and max_range.isdigit():
+                    cursor.execute("SELECT * FROM food WHERE price BETWEEN %s AND %s and estno = %s", (min_range, max_range, est_number))
+                    food_items = cursor.fetchall()
+                else:
+                    input("Invalid choice. Press enter to return.")
+                    self.report_management_menu()
+            elif sort_choice == 2:
+                print("Here are the different food types:")
+                cursor.execute("SELECT distinct foodtype FROM food")
+                food_types = cursor.fetchall()
+                index = 1
+                for item in food_types:
+                    print(f"[{index:<3}] | {item[0]:<10}")
+                    index += 1
+                type_choice = (input("Enter index of choice: "))-1
+                if type_choice.isdigit() and type_choice <= len(food_types) and type_choice >= 0:
+                    cursor.execute("SELECT * FROM food WHERE foodtype = %s and estno = %s;", (food_types[type_choice][0], est_number))
+                    food_items = cursor.fetchall()
+                else:
+                    input("Invalid choice. Press enter to return.")
+                    self.report_management_menu()
+            elif sort_choice == 3:
+                min_range = (input("What is the lower limit of the price range: "))
+                max_range = (input("What is the upper limit of the price range: "))
+                print("Here are the different food types:")
+                cursor.execute("SELECT distinct foodtype FROM food")
+                food_types = cursor.fetchall()
+                index = 1
+                for item in food_types:
+                    print(f"[{index:<3}] | {item[0]:<10}")
+                    index += 1
+                type_choice = (input("Enter index of choice: "))-1
+                if min_range.isdigit() and max_range.isdigit() and 0 < type_choice <= len(food_types):
+                    cursor.execute("SELECT * FROM food WHERE price BETWEEN %s AND %s AND foodtype = %s and estno = %s;", (min_range, max_range, food_types[type_choice][0], est_number))
+                    food_items = cursor.fetchall()
+                else:
+                    input("Invalid choice. Press enter to return.")
+                    self.report_management_menu()
+                    
+        else:
+            input("Invalid choice. Press enter to return.")
+            self.report_management_menu()
 
-    '''
-    -- 7. View all food items from an establishment arranged according to price;
-    SELECT * FROM food WHERE estno = 3 ORDER BY price;
-    ''' 
-
-
-
+        if food_items != []:
+            print("Here are the food item/s that match your criteria.")
+            print(f"No  | Food Name    | Rating | Price  | Food Type | Est No ")
+            for item in food_items:
+                print(f"{item[0]:<3} | {item[1]:<12} | {item[2]:<6} | {item[3]:<5}  | {item[4]:<9} | {item[5]:<6}")
+            print("\n")
+        else:
+            print("There is no food item that matches your criteria.")
 
 ################################
 
