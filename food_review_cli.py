@@ -1,7 +1,6 @@
 import mysql.connector
 import datetime
 from os import system, name
-import datetime
 
 # Function to clear the screen
 def clear():
@@ -28,9 +27,8 @@ class FoodReviewCLI:
 
     # Function to update the average rating per establishment
     def averating(self):
-        cursor = self.connection.cursor()
-        cursor.execute("UPDATE establishment SET averating = COALESCE((SELECT averating FROM (SELECT estno, AVG(rating) AS averating FROM review GROUP BY estno) sq WHERE establishment.estno = sq.estno), 0)")
-        cursor.execute("UPDATE food SET averating = COALESCE((SELECT averating FROM (SELECT foodno, AVG(rating) AS averating FROM review GROUP BY foodno) sq WHERE food.foodno = sq.foodno), 0)")
+        self.cursor.execute("UPDATE establishment SET averating = COALESCE((SELECT averating FROM (SELECT estno, AVG(rating) AS averating FROM review GROUP BY estno) sq WHERE establishment.estno = sq.estno), 0)")
+        self.cursor.execute("UPDATE food SET averating = COALESCE((SELECT averating FROM (SELECT foodno, AVG(rating) AS averating FROM review GROUP BY foodno) sq WHERE food.foodno = sq.foodno), 0)")
 
     # Function for the main menu
     def main_menu(self):
@@ -441,20 +439,6 @@ class FoodReviewCLI:
             print(f"Food item '{foodname}' deleted successfully!")
         except mysql.connector.Error as err:
             print(f"Error deleting food item: {err}")
-
-    # Function to search for food item
-    def search_food_item(self, foodname):
-        try:
-            sql = "SELECT * FROM food WHERE foodname = %s"
-            self.cursor.execute(sql, (foodname,))
-            result = self.cursor.fetchone()
-            if result is None:
-                print(f"Food item '{foodname}' not found.")
-            else:
-                print(f"Food item details:")
-                print(result)
-        except mysql.connector.Error as err:
-            print(f"Error searching for food item: {err}")
 
     # Function to update food item
     def update_food_item(self, new_price, foodname):
