@@ -536,18 +536,18 @@ class FoodReviewCLI:
         except ValueError:
             print("Invalid input. Please enter a valid number.")
         except mysql.connector.Error as err:
-            print(f"Database error: {err}")    def view_food_from_est_by_price(self):
+            print(f"Database error: {err}")
+    
+    def view_food_from_est_by_price(self):
         self.show_food_establishments()
         est_number = int(input("From what establishment would you like to browse by price: "))
         cursor = self.connection.cursor()
-        cursor.execute("select estno from review where reviewno = %s", (est_number,))
-        est_number = cursor.fetchone()
         cursor.execute("SELECT * FROM food WHERE estno = %s ORDER BY price", (est_number,))
         food_items = cursor.fetchall()
         print(f"Here are all the food items from establishment #{est_number}.\n")
         print(f"No  | Food Name    | Rating | Price | Food Type | Est No ")
         for item in food_items:
-            print(f"{item[0]:<3} | {item[1]:<12} | {item[2]:<6} | {item[3]}:<5  | {item[4]:<9} | {item[5]:<6}")
+            print(f"{item[0]:<3} | {item[1]:<12} | {item[2]:<6} | {item[3]:<5}  | {item[4]:<9} | {item[5]:<6}")
         print("\n")
 
 
@@ -562,5 +562,5 @@ class FoodReviewCLI:
 ################################
 
 # Main Menu System
-cli = FoodReviewCLI("localhost", "root", "gddiocadiz", "foodproject")
+cli = FoodReviewCLI("localhost", "root", "killjoy", "foodproject")
 cli.main_menu()
