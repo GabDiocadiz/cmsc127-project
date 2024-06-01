@@ -819,12 +819,25 @@ class FoodReviewCLI:
                         cursor.execute("SELECT * FROM food WHERE price BETWEEN %s AND %s AND foodtype = %s and estno = %s;", (min_range, max_range, food_types[type_choice][0], est_number))
                         food_items = cursor.fetchall()
 
-        # Print output
-        if food_items != []:
+        if food_items:
             print("Here are the food item/s that match your criteria.")
-            print(f"No  | Food Name    | Rating | Price  | Food Type | Est No ")
+            
+            max_food_name_length = max(len(item[1]) for item in food_items)
+            max_food_type_length = max(len(item[4]) for item in food_items)
+            
+            max_food_name_length = max(max_food_name_length, len("Food Name"))
+            max_food_type_length = max(max_food_type_length, len("Food Type"))
+            
+            food_name_header = "Food Name".ljust(max_food_name_length)
+            food_type_header = "Food Type".ljust(max_food_type_length)
+            
+            print(f"| No  | {food_name_header} | Rating | Price  | {food_type_header} | Est No |")
+            print(f"|-----|{'-' * (max_food_name_length + 2)}|--------|--------|{'-' * (max_food_type_length + 2)}|--------|")
+            
             for item in food_items:
-                print(f"{item[0]:<3} | {item[1]:<12} | {item[2]:<6} | {item[3]:<5}  | {item[4]:<9} | {item[5]:<6}")
+                food_name = item[1].ljust(max_food_name_length)
+                food_type = item[4].ljust(max_food_type_length)
+                print(f"| {item[0]:<3} | {food_name} | {item[2]:<6} | {item[3]:<6} | {food_type} | {item[5]:<6} |")
             print("\n")
         else:
             print("There is no food item that matches your criteria.")
