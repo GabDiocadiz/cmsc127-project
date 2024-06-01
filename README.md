@@ -24,3 +24,8 @@ The system can generate the following reports:
 6. View all establishments with a high average rating (rating >= 4).
 7. View all food items from an establishment arranged according to price.
 8. Search food items from any establishment based on a given price range and/or food type.
+
+## Developers
+- Agub, Reijel C.
+- Diocadiz, Gabrielle Therese D.
+- Pekas, David Avery T.
