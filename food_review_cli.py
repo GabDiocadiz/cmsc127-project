@@ -725,20 +725,6 @@ class FoodReviewCLI:
         except mysql.connector.Error as err:
             print(f"Error deleting food item: {err}")
 
-    # Function to search for food item
-    def search_food_item(self, foodname):
-        try:
-            sql = "SELECT * FROM food WHERE foodname = %s"
-            self.cursor.execute(sql, (foodname,))
-            result = self.cursor.fetchone()
-            if result is None:
-                print(f"Food item '{foodname}' not found.")
-            else:
-                print(f"Food item details:")
-                print(result)
-        except mysql.connector.Error as err:
-            print(f"Error searching for food item: {err}")
-
     # Function to update food item
     def update_food_item(self, new_price, foodname):
         try:
