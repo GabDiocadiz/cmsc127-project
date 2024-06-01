@@ -472,7 +472,7 @@ class FoodReviewCLI:
         print("4. View all reviews made from an establishment that belong to a food type")
         print("5. View all review made within a specific month")
         print("6. View all establishments with a high average rating")
-        print("7. View all food items from an  establishment based on price")
+        print("7. View all food items from an establishment based on price")
         print("8. Search for a food item from an establishment based on criteria")
         print("9. Exit")
         report_choice = int(input("Enter choice: "))
@@ -503,6 +503,7 @@ class FoodReviewCLI:
             input("Press Enter to proceed back to main menu")
             self.main_menu()
 
+    # Function to show all food establishments
     def show_food_establishments(self):
         cursor = self.connection.cursor()
         cursor.execute("SELECT estno, estname FROM establishment order by estno")
@@ -512,6 +513,7 @@ class FoodReviewCLI:
             print(unit[0], " | ", unit[1])
         print("\n")
 
+    # Function to show all reviews
     def show_reviews(self):
         cursor = self.connection.cursor()
         cursor.execute("SELECT * FROM review order by reviewno")
@@ -583,7 +585,12 @@ class FoodReviewCLI:
     # Function to view all food items from an establishment based on price
     def view_food_from_est_by_price(self):
         self.show_food_establishments()
-        est_number = int(input("From what establishment would you like to browse by price: "))
+        est_number = (input("From what establishment would you like to browse by price: "))
+        if not est_number.isdigit():
+            input("Invalid choice. Press enter to return.")
+            self.report_management_menu()
+        else:
+            est_number = int(est_number)
         cursor = self.connection.cursor()
         cursor.execute("SELECT * FROM food WHERE estno = %s ORDER BY price", (est_number,))
         food_items = cursor.fetchall()
@@ -596,25 +603,50 @@ class FoodReviewCLI:
     # Function to search for food based on criteria
     def view_food_based_on_criteria(self):
         self.show_food_establishments()
-        est_number = int(input("From what establishment would you like to browse by price: "))
+        est_number = (input("From what establishment would you like to browse by price: "))
+
+        # Validate establishment number
+        if not est_number.isdigit():
+            input("Invalid choice. Press enter to return.")
+            self.report_management_menu()
+        else:
+            est_number = int(est_number)
         cursor = self.connection.cursor()
         cursor.execute("SELECT count(estno) FROM establishment")
         count_est = cursor.fetchone()
+        if 0 > est_number or est_number > count_est[0]:
+            input("Invalid choice. Press enter to return.")
+            self.report_management_menu()
+        
         print("Would you like to browse by ")
         print ("[1] Price range")
         print ("[2] Food Type")
         print ("[3] Price range and food type")
-        sort_choice = int(input("Enter index of choice: "))
-        if sort_choice in [1, 2, 3]:
+        sort_choice = (input("Enter index of choice: "))
+        
+        # Validate sort choice
+        if not sort_choice.isdigit():
+            input("Invalid choice. Press enter to return.")
+            self.report_management_menu()
+        else:
+            sort_choice = int(sort_choice)
+
+        # Search for food items based on criteria
+        if sort_choice not in [1, 2, 3]:
+            input("Invalid choice. Press enter to return.")
+            self.report_management_menu()
+        else:
             if sort_choice == 1:
                 min_range = (input("What is the lower limit of the price range: "))
                 max_range = (input("What is the upper limit of the price range: "))
-                if min_range.isdigit() and max_range.isdigit():
-                    cursor.execute("SELECT * FROM food WHERE price BETWEEN %s AND %s and estno = %s", (min_range, max_range, est_number))
-                    food_items = cursor.fetchall()
-                else:
+                if not min_range.isdigit() or not max_range.isdigit():
                     input("Invalid choice. Press enter to return.")
                     self.report_management_menu()
+                else:
+                    min_range = int(min_range)
+                    max_range = int(max_range)
+                    cursor.execute("SELECT * FROM food WHERE price BETWEEN %s AND %s and estno = %s", (min_range, max_range, est_number))
+                    food_items = cursor.fetchall()
             elif sort_choice == 2:
                 print("Here are the different food types:")
                 cursor.execute("SELECT distinct foodtype FROM food")
@@ -623,16 +655,31 @@ class FoodReviewCLI:
                 for item in food_types:
                     print(f"[{index:<3}] | {item[0]:<10}")
                     index += 1
-                type_choice = (input("Enter index of choice: "))-1
-                if type_choice.isdigit() and type_choice <= len(food_types) and type_choice >= 0:
-                    cursor.execute("SELECT * FROM food WHERE foodtype = %s and estno = %s;", (food_types[type_choice][0], est_number))
-                    food_items = cursor.fetchall()
-                else:
+                type_choice = (input("Enter index of choice: "))
+
+                # Validate food type choice
+                if not type_choice.isdigit():
                     input("Invalid choice. Press enter to return.")
                     self.report_management_menu()
+                else:
+                    sort_choice = int(sort_choice)-1
+                    if type_choice > len(food_types) or type_choice < 0:
+                        input("Invalid choice. Press enter to return.")
+                        self.report_management_menu()
+                    else:
+                        cursor.execute("SELECT * FROM food WHERE foodtype = %s and estno = %s;", (food_types[type_choice][0], est_number))
+                        food_items = cursor.fetchall()
             elif sort_choice == 3:
                 min_range = (input("What is the lower limit of the price range: "))
                 max_range = (input("What is the upper limit of the price range: "))
+            
+                # Validate price range
+                if not min_range.isdigit() or not max_range.isdigit():
+                    input("Invalid choice. Press enter to return.")
+                    self.report_management_menu()
+                else:
+                    min_range = int(min_range)
+                    max_range = int(max_range)
                 print("Here are the different food types:")
                 cursor.execute("SELECT distinct foodtype FROM food")
                 food_types = cursor.fetchall()
@@ -641,16 +688,18 @@ class FoodReviewCLI:
                     print(f"[{index:<3}] | {item[0]:<10}")
                     index += 1
                 type_choice = (input("Enter index of choice: "))-1
-                if min_range.isdigit() and max_range.isdigit() and 0 < type_choice <= len(food_types):
-                    cursor.execute("SELECT * FROM food WHERE price BETWEEN %s AND %s AND foodtype = %s and estno = %s;", (min_range, max_range, food_types[type_choice][0], est_number))
-                    food_items = cursor.fetchall()
-                else:
+
+                if not type_choice.isdigit():
                     input("Invalid choice. Press enter to return.")
                     self.report_management_menu()
-                    
-        else:
-            input("Invalid choice. Press enter to return.")
-            self.report_management_menu()
+                else:
+                    sort_choice = int(sort_choice)-1
+                    if type_choice > len(food_types) or type_choice < 0:
+                        input("Invalid choice. Press enter to return.")
+                        self.report_management_menu()
+                    else:
+                        cursor.execute("SELECT * FROM food WHERE price BETWEEN %s AND %s AND foodtype = %s and estno = %s;", (min_range, max_range, food_types[type_choice][0], est_number))
+                        food_items = cursor.fetchall()
 
         if food_items != []:
             print("Here are the food item/s that match your criteria.")
@@ -664,5 +713,5 @@ class FoodReviewCLI:
 ################################
 
 # Main Menu System
-cli = FoodReviewCLI("localhost", "root", "gddiocadiz", "foodproject")
+cli = FoodReviewCLI("localhost", "root", "killjoy", "foodproject")
 cli.main_menu()
