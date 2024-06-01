@@ -25,15 +25,16 @@ class FoodReviewCLI:
             print(f"Error connecting to database: {err}")
             exit()
 
-
     # Function for the main menu
     def main_menu(self):
         while True:
+            clear()
             print("\nFood Review CLI Menu:")
             print("1. Review Management")
             print("2. Establishment Management")
             print("3. Food Item Management")
-            print("4. Exit")
+            print("4. Report Generation")
+            print("5. Exit")
             choice = input("Enter your choice: ")
 
             if choice == '1':
@@ -43,13 +44,16 @@ class FoodReviewCLI:
             elif choice == '3':
                 self.food_item_management_menu()
             elif choice == '4':
+                self.report_management_menu()
+            elif choice == '5':
                 print("Exiting Food Review CLI.")
                 exit()
             else:
                 print("Invalid choice. Please try again.")
-                self.main_menu()
+                input("Press Enter to proceed")
 
-    #function for the review management
+
+    # Function for the review management
     def review_management_menu(self):
         print("\nReview Management Menu:")
         print("1. Add Review")
@@ -72,7 +76,6 @@ class FoodReviewCLI:
                 except ValueError:
                     print("Invalid input. Please enter a number.")
             date = input("Enter date (DD-MM-YYYY): ")
-
             estno = int(input("Enter establishment number: "))
             userno = int(input("Enter user number: "))
             self.add_review(text, rating, date, estno, userno)
@@ -116,6 +119,7 @@ class FoodReviewCLI:
         elif choice == '5':
             pass  # Back to main menu
         else:
+            clear()
             print("Invalid choice. Please try again.")
             self.review_management_menu()
 
@@ -128,7 +132,6 @@ class FoodReviewCLI:
         print("4. Search Establishment")
         print("5. Back to Main Menu")
         choice = input("Enter your choice: ")
-
 
         if choice == '1':
             # Get user input for establishment name
@@ -458,9 +461,58 @@ class FoodReviewCLI:
             print(f"Error: {e}")
         except mysql.connector.Error as err:
             print(f"Error updating food item price: {err}")
+    
+    def report_management_menu(self):
+        clear()
+        print("Report Generation Menu:")
+        print("1. View all food establishments")
+        print("2. View all food reviews")
+        print("3. View all food items from an establishment")
+        print("4. View all reviews made from an establishment that belong to a food type")
+        print("5. View all review made within a specific month")
+        print("6. view all establishments with a high average rating")
+        print("7. view all food items from an  establishment based on price")
+        print("8. Search for a food item")
+        print("9. Exit")
+        report_choice = int(input("Enter choice: "))
+        if report_choice == 9:
+            print("Going back to main menu")
+            self.main_menu()
+        elif report_choice == 1:
+            self.show_food_establishments()
+        elif report_choice == 2:
+            self.show_reviews()
+        else:
+            print("Invalid choice. Please try again.")
+            self.report_management_menu()
+
+        if report_choice in [ 1, 2, 3, 4, 5, 6, 7, 8, 9]:
+            input("Press Enter to proceed back to main menu")
+            self.report_management_menu()
+
+    def show_food_establishments(self):
+        clear()
+        cursor = self.connection.cursor()
+        cursor.execute("SELECT estno, estname FROM establishment order by estno")
+        food_establishments = cursor.fetchall()
+        print("Establishments:")
+        for unit in food_establishments:
+            print(unit[0], " | ", unit[1])
+        print("\n")
+
+    def show_reviews(self):
+        clear()
+        cursor = self.connection.cursor()
+        cursor.execute("SELECT * FROM review order by reviewno")
+        food_reviews = cursor.fetchall()
+        print("Here are all the food review. \n \n")
+        print(f"No  | Text Description     | Rating | Review Date | Food No | Est No | User No")
+        for item in food_reviews:
+            print(f"{item[0]:<3} | {item[1]:<20} | {item[2]:<6} | {item[3]}  | {item[4]:<7} | {item[5]:<6} | {item[6]:<3}")
+        print("\n")
+
+
 
 # Main Menu System
-while True:
-    clear()
-    cli = FoodReviewCLI("localhost", "root", "killjoy", "foodproject")
-    cli.main_menu()
+cli = FoodReviewCLI("localhost", "root", "killjoy", "foodproject")
+cli.main_menu()
