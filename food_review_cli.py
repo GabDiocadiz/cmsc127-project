@@ -26,6 +26,12 @@ class FoodReviewCLI:
             print(f"Error connecting to database: {err}")
             exit()
 
+    # Function to update the average rating per establishment
+    def averating(self):
+        cursor = self.connection.cursor()
+        cursor.execute("UPDATE establishment SET averating = COALESCE((SELECT averating FROM (SELECT estno, AVG(rating) AS averating FROM review GROUP BY estno) sq WHERE establishment.estno = sq.estno), 0)")
+        cursor.execute("UPDATE food SET averating = COALESCE((SELECT averating FROM (SELECT foodno, AVG(rating) AS averating FROM review GROUP BY foodno) sq WHERE food.foodno = sq.foodno), 0)")
+
     # Function for the main menu
     def main_menu(self):
         while True:
@@ -79,6 +85,7 @@ class FoodReviewCLI:
             estno = int(input("Enter establishment number: "))
             userno = int(input("Enter user number: "))
             self.add_review(text, rating, date, estno, userno)
+            self.averating()
             input("Press Enter to proceed back to main menu")
         elif choice == '2':
             # Get review ID for update
@@ -96,6 +103,7 @@ class FoodReviewCLI:
                         new_rating = int(input("Enter new rating (1-5): "))
                         if 1 <= new_rating <= 5:
                             self.update_review_rating(new_rating, reviewno)
+                            self.averating()
                             break
                         else:
                             print("Invalid rating. Please enter a number between 1 and 5.")
@@ -113,6 +121,7 @@ class FoodReviewCLI:
             # Get review ID for deletion
             reviewno = int(input("Enter review ID to delete: "))
             self.delete_review(reviewno)
+            self.averating()
         elif choice == '4':
             # Allow searching by various criteria (text, rating, establishment, etc.)
             # Implement search logic using appropriate SQL queries
@@ -138,6 +147,7 @@ class FoodReviewCLI:
             # Get user input for establishment name
             estname = input("Enter establishment name: ")
             self.add_establishment(estname)
+            self.averating()
         elif choice == '2':
             # Get existing establishment name for update
             estname = input("Enter establishment name to update: ")
@@ -182,6 +192,7 @@ class FoodReviewCLI:
             foodtype = input("Enter food type: ")
             estno = int(input("Enter establishment number: "))
             self.add_food_item(foodname, price, foodtype, estno)
+            self.averating()
         elif choice == '2':
             # Get food item name for price update
             foodname = input("Enter food item name to update price: ")
@@ -475,35 +486,35 @@ class FoodReviewCLI:
         print("7. View all food items from an establishment arranged according to price;")
         print("8. Search food items from any establishment based on a given price range and/or food type.")
         print("9. Exit")
-        report_choice = int(input("Enter choice: "))
-        if report_choice == 9:
+        report_choice = (input("Enter choice: "))
+        if report_choice == '9':
             print("Going back to main menu")
             self.main_menu()
-        elif report_choice == 1:
+        elif report_choice == '1':
             clear()
             self.show_food_establishments()
-        elif report_choice == 2:
+        elif report_choice == '2':
             clear()
             self.show_reviews()
-        elif report_choice == 3:
+        elif report_choice == '3':
             self.show_food_items_from_establishment()
-        elif report_choice == 4:
+        elif report_choice == '4':
             self.show_food_items_from_establishment_and_food_type()
-        elif report_choice == 5:
+        elif report_choice == '5':
             self.show_reviews_within_month()
-        elif report_choice == 6:
+        elif report_choice == '6':
             self.show_establishments_with_high_average_rating()
-        elif report_choice == 7:
+        elif report_choice == '7':
             clear()
             self.view_food_from_est_by_price()
-        elif report_choice == 8:
+        elif report_choice == '8':
             clear()
             self.view_food_based_on_criteria()
         else:
-            print("Invalid choice. Please try again.")
+            input("Invalid choice. Press Enter to proceed")
             self.report_management_menu()
 
-        if report_choice in [ 1, 2, 3, 4, 5, 6, 7, 8, 9]:
+        if int(report_choice) in [1, 2, 3, 4, 5, 6, 7, 8, 9]:
             input("Press Enter to proceed back to main menu")
             self.main_menu()
 
@@ -524,8 +535,12 @@ class FoodReviewCLI:
         food_reviews = cursor.fetchall()
         print("Here are all the food review. \n \n")
         print(f"No  | Text Description     | Rating | Review Date | Food No | Est No | User No")
+
         for item in food_reviews:
-            print(f"{item[0]:<3} | {item[1]:<20} | {item[2]:<6} | {item[3]}  | {item[4]:<7} | {item[5]:<6} | {item[6]:<3}")
+            if item[4] != None:
+                print(f"{item[0]:<3} | {item[1]:<20} | {item[2]:<6} | {item[3]}  | {item[4]:<7} | {item[5]:<6} | {item[6]:<3}")
+            else:
+                print(f"{item[0]:<3} | {item[1]:<20} | {item[2]:<6} | {item[3]}  | None    | {item[5]:<6} | {item[6]:<3}")
         print("\n")
 
     # 3. View all food items from an establishment
@@ -643,11 +658,15 @@ class FoodReviewCLI:
         cursor = self.connection.cursor()
         cursor.execute("SELECT * FROM food WHERE estno = %s ORDER BY price", (est_number,))
         food_items = cursor.fetchall()
-        print(f"Here are all the food items from establishment #{est_number}.\n")
-        print(f"No  | Food Name    | Rating | Price  | Food Type | Est No ")
-        for item in food_items:
-            print(f"{item[0]:<3} | {item[1]:<12} | {item[2]:<6} | {item[3]:<5}  | {item[4]:<9} | {item[5]:<6}")
-        print("\n")
+        if food_items != []:
+            print(f"Here are all the food items from establishment #{est_number}.\n")
+            print(f"No  | Food Name    | Rating | Price  | Food Type | Est No ")
+            for item in food_items:
+                print(f"{item[0]:<3} | {item[1]:<12} | {item[2]:<6} | {item[3]:<5}  | {item[4]:<9} | {item[5]:<6}")
+            print("\n")
+        else:
+            input("Invalid establishment number. Press enter to return.")
+            self.report_management_menu()
 
     # Function to search for food based on criteria
     def view_food_based_on_criteria(self):
@@ -711,8 +730,8 @@ class FoodReviewCLI:
                     input("Invalid choice. Press enter to return.")
                     self.report_management_menu()
                 else:
-                    sort_choice = int(sort_choice)-1
-                    if type_choice > len(food_types) or type_choice < 0:
+                    type_choice = int(type_choice)-1
+                    if type_choice > len(food_types)-1 or type_choice < 0:
                         input("Invalid choice. Press enter to return.")
                         self.report_management_menu()
                     else:
@@ -736,20 +755,21 @@ class FoodReviewCLI:
                 for item in food_types:
                     print(f"[{index:<3}] | {item[0]:<10}")
                     index += 1
-                type_choice = (input("Enter index of choice: "))-1
+                type_choice = (input("Enter index of choice: "))
 
                 if not type_choice.isdigit():
                     input("Invalid choice. Press enter to return.")
                     self.report_management_menu()
                 else:
-                    sort_choice = int(sort_choice)-1
-                    if type_choice > len(food_types) or type_choice < 0:
+                    type_choice = int(type_choice)-1
+                    if type_choice > len(food_types)-1 or type_choice < 0:
                         input("Invalid choice. Press enter to return.")
                         self.report_management_menu()
                     else:
                         cursor.execute("SELECT * FROM food WHERE price BETWEEN %s AND %s AND foodtype = %s and estno = %s;", (min_range, max_range, food_types[type_choice][0], est_number))
                         food_items = cursor.fetchall()
 
+        # Print output
         if food_items != []:
             print("Here are the food item/s that match your criteria.")
             print(f"No  | Food Name    | Rating | Price  | Food Type | Est No ")
