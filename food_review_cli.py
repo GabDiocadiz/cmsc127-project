@@ -197,19 +197,70 @@ class FoodReviewCLI:
             foodname = input("Enter food item name to delete: ")
             self.delete_food_item(foodname)
         elif choice == '4':
-            # Get food item name for search
-            foodname = input("Enter food item name to search: ")
-            # Implement search logic using appropriate SQL queries
-            print("Search functionality for food items is not yet implemented.")
+            self.search_food_items()
         elif choice == '5':
             pass  # Back to main menu
         else:
             print("Invalid choice. Please try again.")
-            self.food_item_management_menu()        
+            self.food_item_management_menu()
 
-    def close(self):
-        self.cursor.close()
-        self.connection.close()
+    def search_food_items(self):
+        print("\nSearch Food Items:")
+        search_term = input("Enter search term (by name or type): ")
+
+        try:
+            cursor = self.connection.cursor()
+
+            # Prepare SQL query using wildcards for partial matches
+            sql = f"""
+                SELECT f.foodno, f.foodname, f.averating, f.price, f.foodtype, e.estname
+                FROM food f
+                INNER JOIN establishment e ON f.estno = e.estno
+                WHERE f.foodname LIKE %s OR f.foodtype LIKE %s
+            """
+            values = ("%" + search_term + "%", "%" + search_term + "%")  # Match food name or type
+
+            cursor.execute(sql, values)
+            results = cursor.fetchall()
+
+            if results:
+                # Prepare data for table
+                food_data = []
+                for food_item in results:
+                    food_data.append({
+                        "Food ID": food_item[0],
+                        "Food Name": food_item[1],
+                        "Average Rating": food_item[2],
+                        "Price": f"{food_item[3]:.2f}",  # Format price with two decimal places
+                        "Food Type": food_item[4],
+                        "Establishment": food_item[5],
+                    })
+
+                # Print food_data for verification (optional)
+                # print(food_data)
+                table_headers = {
+                                    "Food ID": "Food ID",
+                                    "Food Name": "Food Name",
+                                    "Average Rating": "Average Rating",
+                                    "Price": "Price",
+                                    "Food Type": "Food Type",
+                                    "Establishment": "Establishment",
+                                }
+                # Directly pass list of strings for headers
+                food_table = tabulate(food_data, headers=table_headers, tablefmt="grid")
+
+                print("\nSearch Results:")
+                print(food_table)
+            else:
+                print("No food items found matching your search.")
+
+        except Exception as e:
+            print(f"An error occurred during search: {e}")
+
+
+        def close(self):
+            self.cursor.close()
+            self.connection.close()
 
     # Function for the food review management
     # Review Management Functions
@@ -291,16 +342,6 @@ class FoodReviewCLI:
             print(f"An error occurred during search: {e}")
 
     def display_review_results(self, results):
-        """
-        Displays search results for reviews in a user-friendly format.
-
-        Args:
-            results (list): A list of tuples containing review data.
-
-        Returns:
-            str: A formatted string representing the review table (or an empty string if no reviews found).
-        """
-
         if results:
             # Prepare review data as a list of dictionaries
             formatted_data = []
@@ -334,16 +375,6 @@ class FoodReviewCLI:
             return ""  # Indicate no reviews found (empty string)
  
     def get_food_name(self, foodno):
-        """
-        Retrieves the name of a food item from the 'food' table based on its 'foodno'.
-
-        Args:
-            foodno (int): The ID of the food item.
-
-        Returns:
-            str (or None): The name of the food item if found, otherwise None.
-        """
-
         if foodno is not None:
             try:
                 # Assuming a connection to the database is established elsewhere (e.g., in the class constructor)
@@ -362,16 +393,6 @@ class FoodReviewCLI:
             return None  # No foodno provided, return None
         
     def get_establishment_name(self, estno):
-        """
-        Retrieves the name of an establishment from the 'establishment' table based on its 'estno'.
-
-        Args:
-            estno (int): The ID of the establishment.
-
-        Returns:
-            str: The name of the establishment.
-        """
-
         try:
             # Assuming a connection to the database is established elsewhere (e.g., in the class constructor)
             self.cursor.execute("SELECT estname FROM establishment WHERE estno = %s", (estno,))
