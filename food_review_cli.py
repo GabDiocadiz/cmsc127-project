@@ -61,9 +61,22 @@ class FoodReviewCLI:
         print("3. Delete Review")
         print("4. Search Reviews")
         print("5. Back to Main Menu")
+        review_type = input("Enter if food/establishment: ")
         choice = input("Enter your choice: ")
 
-                self.review_management_menu()
+        if review_type.lower() == "establishment":
+            if choice == '1':
+                self.reviews_est()
+            elif choice == '2':
+                self.update_reviews_est()
+            elif choice == '3':
+                # Get review ID for deletion
+                reviewno = int(input("Enter review ID to delete: "))
+                self.delete_review(reviewno)
+            elif choice == '4':
+                self.search_reviews()
+            elif choice == '5':
+                pass  # Back to main menu
         elif review_type.lower() == "food":
             if choice == '1':
                 self.review_food()
@@ -71,9 +84,10 @@ class FoodReviewCLI:
                 # Get review ID for update
                 reviewno = int(input("Enter review ID to update: "))
                 # Prompt user for specific update (text, rating, estno, foodno)
-                update_choice = input("Update (text/rating/estno/foodno) or 'back' to menu: ")
+                update_choice = input("Update (text/rating/foodno) or 'back' to menu: ")
                 if update_choice.lower() == 'back':
-                    self.review_management_menu()
+                    reviewno = int(input("Enter review ID to delete: "))
+                    self.review_management_menu(reviewno)
                 elif update_choice.lower() == 'text':
                     new_text = input("Enter new review text: ")
                     self.update_review_text(new_text, reviewno)
@@ -97,6 +111,18 @@ class FoodReviewCLI:
                 else:
             else:
                 print("Invalid choice. Please try again.")
+        elif choice == '3':
+            # Get review ID for deletion
+            reviewno = int(input("Enter review ID to delete: "))
+            self.delete_review(reviewno)
+        elif choice == '4':
+            self.search_reviews()
+        elif choice == '5':
+            pass  # Back to main menu
+        else:
+            clear()
+            print("Invalid choice. Please try again.")
+            self.review_management_menu()
 
     # Function for the food establishment management
     def establishment_management_menu(self):
@@ -294,6 +320,8 @@ class FoodReviewCLI:
 
             # Insert review
             sql = """INSERT INTO review (text, rating, date, foodno, estno, userno)
+                    VALUES (%s, %s, STR_TO_DATE(%s, '%Y-%m-%d'), %s, %s, %s)"""
+            self.cursor.execute(sql, (text, rating, formatted_date, foodno, estno, userno))
             self.connection.commit()
             print("Review added successfully!")
         except ValueError as e:
@@ -357,6 +385,46 @@ class FoodReviewCLI:
                 print("Review not found.")
         except mysql.connector.Error as err:
             print(f"Error updating review establishment number: {err}")
+
+    def update_reviews_food(self):
+        # Get review ID for update
+        reviewno = int(input("Enter review ID to update: "))
+        # Prompt user for specific update (text, rating, estno, foodno)
+        update_choice = input("Update (text/rating/foodno) or 'back' to menu: ")
+        if update_choice.lower() == 'back':
+            reviewno = int(input("Enter review ID to delete: "))
+            self.review_management_menu(reviewno)
+        elif update_choice.lower() == 'text':
+            new_text = input("Enter new review text: ")
+            self.update_review_text(new_text, reviewno)
+        elif update_choice.lower() == 'rating':
+            while True:
+                try:
+                    new_rating = int(input("Enter new rating (1-5): "))
+                    if 1 <= new_rating <= 5:
+                        self.update_review_rating(new_rating, reviewno)
+                        break
+                    else:
+                        print("Invalid rating. Please enter a number between 1 and 5.")
+                except ValueError:
+                    print("Invalid input. Please enter a number.")
+        elif update_choice.lower() in ('foodno'):
+            reviewno = int(input("Enter review ID to delete: "))
+            self.update_review_food_no(reviewno)
+        else:
+                    print("Invalid choice. Please try again.")
+
+    def update_review_food_no(self, new_foodno, reviewno):
+        try:
+            sql = "UPDATE review SET foodno = %s WHERE reviewno = %s"  # Update only foodno
+            self.cursor.execute(sql, (new_foodno, reviewno))
+            self.connection.commit()
+            if self.cursor.rowcount > 0:
+                print("Review food item number updated successfully!")
+            else:
+                print("Review not found.")
+        except mysql.connector.Error as err:
+            print(f"Error updating review food item number: {err}")
 
     def review_food(self):
         # Get user input for review details (text, rating, date, estno, userno)
