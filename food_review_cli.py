@@ -1,6 +1,7 @@
 import mysql.connector
 import datetime
 from os import system, name
+import datetime
 
 # Function to clear the screen
 def clear():
@@ -541,6 +542,44 @@ class FoodReviewCLI:
         except mysql.connector.Error as err:
             print(f"Database error: {err}")
     
+    def show_reviews_from_establishment_and_food_type(self):
+        try:
+            estno = int(input("Enter establishment number: "))
+
+            self.cursor.execute("SELECT DISTINCT foodtype FROM food")
+            food_types = self.cursor.fetchall()
+            
+            if not food_types:
+                print("No food types found.")
+                return
+            
+            print("Food types:")
+            for food_type in food_types:
+                print(food_type[0])
+            
+            foodtype = input("Enter food type: ")
+
+            sql = """SELECT review.reviewno, review.text, review.rating, review.date, review.foodno, review.estno, review.userno
+                    FROM review
+                    JOIN food ON review.foodno = food.foodno
+                    WHERE review.estno = %s AND food.foodtype = %s"""
+            self.cursor.execute(sql, (estno, foodtype))
+            reviews = self.cursor.fetchall()
+
+            if not reviews:
+                print("No reviews found for this establishment and food type.")
+            else:
+                print("{:<10} {:<50} {:<10} {:<15} {:<10} {:<10} {:<10}".format("Review No", "Text", "Rating", "Date", "Food No", "Est No", "User No"))
+                print("-" * 120)
+                for review in reviews:
+                    # Format the date properly
+                    review_date = review[3].strftime('%Y-%m-%d') if isinstance(review[3], datetime.date) else review[3]
+                    print("{:<10} {:<50} {:<10} {:<15} {:<10} {:<10} {:<10}".format(review[0], review[1], review[2], review_date, review[4], review[5], review[6]))
+        except ValueError:
+            print("Invalid input. Please enter valid numbers.")
+        except mysql.connector.Error as err:
+            print(f"Database error: {err}")
+    
     # Function to view all food items from an establishment based on price
     def view_food_from_est_by_price(self):
         self.show_food_establishments()
@@ -625,5 +664,5 @@ class FoodReviewCLI:
 ################################
 
 # Main Menu System
-cli = FoodReviewCLI("localhost", "root", "killjoy", "foodproject")
+cli = FoodReviewCLI("localhost", "root", "gddiocadiz", "foodproject")
 cli.main_menu()
