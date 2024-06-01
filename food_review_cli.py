@@ -61,24 +61,8 @@ class FoodReviewCLI:
         print("3. Delete Review")
         print("4. Search Reviews")
         print("5. Back to Main Menu")
-        review_type = input("Enter food/establishment: ")
         choice = input("Enter your choice: ")
 
-        if review_type.lower() == "establishment":
-            if choice == '1':
-                self.reviews_est()
-            elif choice == '2':
-                self.update_establishment()
-            elif choice == '3':
-                # Get review ID for deletion
-                reviewno = int(input("Enter review ID to delete: "))
-                self.delete_review(reviewno)
-            elif choice == '4':
-                self.search_reviews()
-            elif choice == '5':
-                pass  # Back to main menu
-            else:
-                print("Invalid choice. Please try again.")
                 self.review_management_menu()
         elif review_type.lower() == "food":
             if choice == '1':
@@ -111,20 +95,8 @@ class FoodReviewCLI:
                         print("Update food item number is not currently supported.")
                     # Implement update_review_est_food_no function when supported
                 else:
-                    print("Invalid choice. Please try again.")
-            elif choice == '3':
-                # Get review ID for deletion
-                reviewno = int(input("Enter review ID to delete: "))
-                self.delete_review(reviewno)
-            elif choice == '4':
-                # Allow searching by various criteria (text, rating, establishment, etc.)
-                # Implement search logic using appropriate SQL queries
-                print("Search functionality for reviews is not yet implemented.")
-            elif choice == '5':
-                pass  # Back to main menu
             else:
                 print("Invalid choice. Please try again.")
-                self.review_management_menu()
 
     # Function for the food establishment management
     def establishment_management_menu(self):
@@ -322,8 +294,6 @@ class FoodReviewCLI:
 
             # Insert review
             sql = """INSERT INTO review (text, rating, date, foodno, estno, userno)
-                    VALUES (%s, %s, STR_TO_DATE(%s, '%Y-%m-%d'), %s, %s, %s)"""
-            self.cursor.execute(sql, (text, rating, formatted_date, foodno, estno, userno))
             self.connection.commit()
             print("Review added successfully!")
         except ValueError as e:
