@@ -617,6 +617,23 @@ class FoodReviewCLI:
             print("Invalid input. Please enter valid numbers.")
         except mysql.connector.Error as err:
             print(f"Database error: {err}")
+
+    # 6. View all establishments with a high average rating (rating >= 4). (ratings from 1-5; highest is 5);
+    def show_establishments_with_high_average_rating(self):
+        try:
+            sql = "SELECT * FROM establishment WHERE averating >= 4"
+            self.cursor.execute(sql)
+            establishments = self.cursor.fetchall()
+
+            if not establishments:
+                print("No establishments found with an average rating of 4 or higher.")
+            else:
+                print("{:<10} {:<50} {:<10}".format("Est No", "Est Name", "Avg Rating"))
+                print("-" * 70)
+                for est in establishments:
+                    print("{:<10} {:<50} {:<10}".format(est[0], est[1], est[2]))
+        except mysql.connector.Error as err:
+            print(f"Database error: {err}")
     
     # 7. View all food items from an establishment arranged according to price;
     def view_food_from_est_by_price(self):
