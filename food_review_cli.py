@@ -576,7 +576,18 @@ class FoodReviewCLI:
     # 4. View all food items from an establishment that belong to a food type {meat | veg | etc.}.
     def show_food_items_from_establishment_and_food_type(self):
         try:
-            estno = int(input("Enter establishment number: "))
+            while True:
+                estno = input("Enter establishment number: ")
+                if not estno.isdigit():
+                    print("Invalid input. Please enter a valid number.")
+                    continue
+                estno = int(estno)
+                
+                self.cursor.execute("SELECT estno FROM establishment WHERE estno = %s", (estno,))
+                if not self.cursor.fetchone():
+                    print("Establishment number does not exist. Please enter a valid establishment number.")
+                    continue
+                break
 
             self.cursor.execute("SELECT DISTINCT foodtype FROM food")
             food_types = self.cursor.fetchall()
@@ -586,11 +597,15 @@ class FoodReviewCLI:
                 return
             
             print("Food types:")
-            for food_type in food_types:
-                print(food_type[0])
+            valid_food_types = [food_type[0] for food_type in food_types]
+            for food_type in valid_food_types:
+                print(food_type)
             
             while True:
                 foodtype = input("Enter food type: ")
+                if foodtype not in valid_food_types:
+                    print("Invalid food type. Please enter a valid food type.")
+                    continue
 
                 sql = """SELECT * FROM food WHERE estno = %s AND foodtype = %s"""
                 self.cursor.execute(sql, (estno, foodtype))
@@ -602,7 +617,6 @@ class FoodReviewCLI:
                     if retry.lower() != 'y':
                         break
                 else:
-                    # Determine the maximum width needed for the Price column
                     max_price_length = max(len(f"{item[3]:.2f}") for item in food_items)
                     price_header = "Price".ljust(max_price_length)
 
@@ -620,11 +634,40 @@ class FoodReviewCLI:
     # 5. View all reviews made within a month for an establishment or a food item;
     def show_reviews_within_month(self):
         try:
-            estno = int(input("Enter establishment number (or 0 to skip): "))
+            while True:
+                estno = input("Enter establishment number (or 0 to skip): ")
+                if not estno.isdigit():
+                    print("Invalid input. Please enter a valid number.")
+                    continue
+                estno = int(estno)
+                if estno != 0:
+                    self.cursor.execute("SELECT estno FROM establishment WHERE estno = %s", (estno,))
+                    if not self.cursor.fetchone():
+                        print("Establishment number does not exist. Please enter a valid establishment number.")
+                        continue
+                break
+
             foodno = 0
             if estno == 0:
-                foodno = int(input("Enter food item number: "))
-            month = int(input("Enter month (1-12): "))
+                while True:
+                    foodno = input("Enter food item number: ")
+                    if not foodno.isdigit():
+                        print("Invalid input. Please enter a valid number.")
+                        continue
+                    foodno = int(foodno)
+                    self.cursor.execute("SELECT foodno FROM food WHERE foodno = %s", (foodno,))
+                    if not self.cursor.fetchone():
+                        print("Food item number does not exist. Please enter a valid food item number.")
+                        continue
+                    break
+
+            while True:
+                month = input("Enter month (1-12): ")
+                if not month.isdigit() or not (1 <= int(month) <= 12):
+                    print("Invalid input. Please enter a valid month between 1 and 12.")
+                    continue
+                month = int(month)
+                break
 
             if estno == 0 and foodno == 0:
                 print("You must enter either an establishment number or a food item number.")
@@ -637,11 +680,16 @@ class FoodReviewCLI:
             if not reviews:
                 print("No reviews found for the given criteria.")
             else:
-                print("{:<10} {:<50} {:<10} {:<15} {:<10} {:<10} {:<10}".format("Review No", "Text", "Rating", "Date", "Food No", "Est No", "User No"))
-                print("-" * 120)
+                max_text_length = max(len(review[1]) for review in reviews)
+                header_length = len("Text Description")
+                max_length = max(max_text_length, header_length)
+                text_header = "Text Description".ljust(max_length)
+                print(f"| Review No | {text_header} | Rating | Date       | Food No | Est No | User No |")
+                print(f"|-----------|{'-' * (max_length + 2)}|--------|------------|---------|--------|---------|")
                 for review in reviews:
                     review_date = review[3].strftime('%Y-%m-%d')
-                    print("{:<10} {:<50} {:<10} {:<15} {:<10} {:<10} {:<10}".format(review[0], review[1], review[2], review_date, review[4], review[5], review[6]))
+                    text = review[1].ljust(max_length)
+                    print(f"| {review[0]:<9} | {text} | {review[2]:<6} | {review_date:<10} | {review[4] or 'None':<7} | {review[5]:<6} | {review[6]:<7} |")
         except ValueError:
             print("Invalid input. Please enter valid numbers.")
         except mysql.connector.Error as err:
