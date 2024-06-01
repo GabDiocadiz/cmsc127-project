@@ -27,5 +27,5 @@ The system can generate the following reports:
 
 ## Developers
 - Agub, Reijel C.
-- Diocadiz, Gabrielle Therese D.
 - Pekas, David Avery T.
+- Diocadiz, Gabrielle Therese D.
