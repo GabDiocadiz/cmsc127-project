@@ -28,25 +28,26 @@ class FoodReviewCLI:
 
     # Function for the main menu
     def main_menu(self):
-        print("\nFood Review CLI Menu:")
-        print("1. Review Management")
-        print("2. Establishment Management")
-        print("3. Food Item Management")
-        print("4. Exit")
-        choice = input("Enter your choice: ")
+        while True:
+            print("\nFood Review CLI Menu:")
+            print("1. Review Management")
+            print("2. Establishment Management")
+            print("3. Food Item Management")
+            print("4. Exit")
+            choice = input("Enter your choice: ")
 
-        if choice == '1':
-            self.review_management_menu()
-        elif choice == '2':
-            self.establishment_management_menu()
-        elif choice == '3':
-            self.food_item_management_menu()
-        elif choice == '4':
-            print("Exiting Food Review CLI.")
-            exit()
-        else:
-            print("Invalid choice. Please try again.")
-            self.main_menu()
+            if choice == '1':
+                self.review_management_menu()
+            elif choice == '2':
+                self.establishment_management_menu()
+            elif choice == '3':
+                self.food_item_management_menu()
+            elif choice == '4':
+                print("Exiting Food Review CLI.")
+                exit()
+            else:
+                print("Invalid choice. Please try again.")
+                self.main_menu()
 
     #function for the review management
     def review_management_menu(self):
@@ -57,7 +58,6 @@ class FoodReviewCLI:
         print("4. Search Reviews")
         print("5. Back to Main Menu")
         choice = input("Enter your choice: ")
-
 
         if choice == '1':
             # Get user input for review details (text, rating, date, estno, userno)
@@ -71,7 +71,8 @@ class FoodReviewCLI:
                         print("Invalid rating. Please enter a number between 1 and 5.")
                 except ValueError:
                     print("Invalid input. Please enter a number.")
-            date = input("Enter date (DD-Month-YYYY): ")  # Adjust date format if needed
+            date = input("Enter date (DD-MM-YYYY): ")
+
             estno = int(input("Enter establishment number: "))
             userno = int(input("Enter user number: "))
             self.add_review(text, rating, date, estno, userno)
@@ -459,10 +460,7 @@ class FoodReviewCLI:
             print(f"Error updating food item price: {err}")
 
 # Main Menu System
-
-# Example usage (replace with your credentials)
-if __name__ == "__main__":
+while True:
+    clear()
     cli = FoodReviewCLI("localhost", "root", "killjoy", "foodproject")
     cli.main_menu()
-    cli.close()  # Close connection on program exit
-
