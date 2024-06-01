@@ -82,22 +82,7 @@ class FoodReviewCLI:
                 self.review_management_menu()
         elif review_type.lower() == "food":
             if choice == '1':
-                # Get user input for review details (text, rating, date, estno, userno)
-                text = input("Enter review text: ")
-                while True:
-                    try:
-                        rating = int(input("Enter rating (1-5): "))
-                        if 1 <= rating <= 5:
-                            break
-                        else:
-                            print("Invalid rating. Please enter a number between 1 and 5.")
-                    except ValueError:
-                        print("Invalid input. Please enter a number.")
-                date = input("Enter date (DD-Month-YYYY): ")  # Adjust date format if needed
-                foodno = input("Enter food number: ")
-                estno = int(input("Enter establishment number: "))
-                userno = int(input("Enter user number: "))
-                self.add_review(text, rating, date, foodno, estno, userno)
+                self.review_food()
             elif choice == '2':
                 # Get review ID for update
                 reviewno = int(input("Enter review ID to update: "))
@@ -385,14 +370,41 @@ class FoodReviewCLI:
                         print("Invalid rating. Please enter a number between 1 and 5.")
                 except ValueError:
                     print("Invalid input. Please enter a number.")
-        elif update_choice.lower() in ('estno', 'foodno'):
-            if update_choice.lower() == 'estno':
-                print("Update establishment number is not currently supported.")
-            else:
-                print("Update food item number is not currently supported.")
-            # Implement update_review_est_food_no function when supported
+        elif update_choice.lower() in ('estno'):
+            new_estno = int(input("Enter new Establishment Number: "))
+            self.update_review_est_no(new_estno, reviewno)
         else:
-            print("Invalid choice. Please try again.")    
+            print("Invalid choice. Please try again.")
+
+    def update_review_est_no(self, new_estno, reviewno):
+        try:
+            sql = "UPDATE review SET estno = %s WHERE reviewno = %s"  # Update only estno
+            self.cursor.execute(sql, (new_estno, reviewno))
+            self.connection.commit()
+            if self.cursor.rowcount > 0:
+                print("Review establishment number updated successfully!")
+            else:
+                print("Review not found.")
+        except mysql.connector.Error as err:
+            print(f"Error updating review establishment number: {err}")
+
+    def review_food(self):
+        # Get user input for review details (text, rating, date, estno, userno)
+        text = input("Enter review text: ")
+        while True:
+            try:
+                rating = int(input("Enter rating (1-5): "))
+                if 1 <= rating <= 5:
+                    break
+                else:
+                    print("Invalid rating. Please enter a number between 1 and 5.")
+            except ValueError:
+                print("Invalid input. Please enter a number.")
+        date = input("Enter date (DD-Month-YYYY): ")  # Adjust date format if needed
+        foodno = input("Enter food number: ")
+        estno = int(input("Enter establishment number: "))
+        userno = int(input("Enter user number: "))
+        self.add_review(text, rating, date, foodno, estno, userno)    
 
     def update_review_text(self, new_text, reviewno):
         try:
