@@ -29,7 +29,6 @@ class FoodReviewCLI:
     # Function for the main menu
     def main_menu(self):
         while True:
-            clear()
             print("\nFood Review CLI Menu:")
             print("1. Review Management")
             print("2. Establishment Management")
@@ -218,24 +217,16 @@ class FoodReviewCLI:
 
         if choice == '1':
             search_text = input("Enter search text: ")
-            # Implement search by text using LIKE operator
             sql = "SELECT * FROM review WHERE text LIKE %s"
             values = ("%" + search_text + "%",)
-            self.cursor.execute(sql, values)
-            results = self.cursor.fetchall()
-            self.display_review_results(results)
         elif choice == '2':
             while True:
                 try:
                     min_rating = int(input("Enter minimum rating (1-5): "))
                     max_rating = int(input("Enter maximum rating (1-5): "))
                     if 1 <= min_rating <= 5 and 1 <= max_rating <= 5 and min_rating <= max_rating:
-                        # Implement search by rating range
                         sql = "SELECT * FROM review WHERE rating BETWEEN %s AND %s"
                         values = (min_rating, max_rating)
-                        self.cursor.execute(sql, values)
-                        results = self.cursor.fetchall()
-                        self.show_reviews()
                         break
                     else:
                         print("Invalid rating range. Please enter values between 1 and 5, with min <= max.")
@@ -244,49 +235,136 @@ class FoodReviewCLI:
         elif choice == '3':
             from_date = input("Enter start date (DD-Month-YYYY): ")
             to_date = input("Enter end date (DD-Month-YYYY): ")
-            # Implement search by date range
             sql = "SELECT * FROM review WHERE review_date BETWEEN %s AND %s"
             values = (from_date, to_date)
-            self.cursor.execute(sql, values)
-            results = self.cursor.fetchall()
-            self.show_reviews()
         elif choice == '4':
-            # Optional search by food
             food_name = input("Enter food name (partial match, or leave blank to skip): ")
             if food_name:
-                # Search by food name using JOIN (adjust column names if needed)
                 sql = """
-                SELECT r.*
-                FROM review r
-                LEFT JOIN food f ON r.foodno = f.foodno
-                WHERE f.foodname LIKE %s
-                """
+                        SELECT r.*, f.foodname  -- Include desired food data from 'food' table
+                        FROM review r
+                        LEFT JOIN food f ON r.foodno = f.foodno  -- Adjust column names if needed
+                        WHERE f.foodname LIKE %s
+                    """
                 values = ("%" + food_name + "%",)
             else:
-                # No food filtering, use original review table selection
                 sql = "SELECT * FROM review"
                 values = ()
-            self.cursor.execute(sql, values)
-            results = self.cursor.fetchall()
-            self.show_reviews()
         elif choice == '5':
             est_name = input("Enter establishment name (partial match): ")
-            # Search by establishment name using JOIN (adjust column names if needed)
             sql = """
-            SELECT r.*
-            FROM review r
-            INNER JOIN establishment e ON r.estno = e.estno
-            WHERE e.estname LIKE %s
-            """
+                    SELECT r.*, e.estname  -- Include desired establishment data from 'establishment' table
+                    FROM review r
+                    INNER JOIN establishment e ON r.estno = e.estno  -- Adjust column names if needed
+                    WHERE e.estname LIKE %s
+                """
             values = ("%" + est_name + "%",)
-            self.cursor.execute(sql, values)
-            results = self.cursor.fetchall()
-            self.show_reviews()
         elif choice == '6':
-            pass  # Back to menu
+            return  # Back to menu (assuming a separate menu function)
         else:
             print("Invalid choice. Please try again.")
             self.search_reviews()  # Recursively call for valid input
+
+        try:
+            self.cursor.execute(sql, values)
+            results = self.cursor.fetchall()
+            self.display_review_results(results)  # Call the improved display_review_results function
+        except Exception as e:
+            print(f"An error occurred during search: {e}")
+
+
+    def display_review_results(self, results):
+        """
+        Displays search results for reviews in a user-friendly format.
+
+        Args:
+            results (list): A list of tuples containing review data.
+        """
+
+        if results:
+            print("\nSearch Results:")
+            for review in results:
+                # Assuming review data includes columns like 'text', 'rating', 'review_date', etc.
+                # Adjust column names and displayed data based on your actual schema
+
+                # Use string formatting to create a single review string
+                formatted_review = f"""
+                Review Text: {review[1]}
+                Rating: {review[2]}
+                Review Date: {review[3]}
+                """
+
+                # Check for optional food information (if foodno is not null)
+                if review[4] is not None:
+                    # Assuming you have a separate function to retrieve food details based on foodno
+                    food_name = self.get_food_name(review[4])
+                    formatted_review += f"Food: {food_name}\n"
+                else:
+                    formatted_review += "Food: Not specified\n"
+
+                # Establishment information should always be available based on schema
+                formatted_review += f"Establishment: {self.get_establishment_name(review[5])}\n"
+
+                print(formatted_review)  # Print the complete formatted review string
+                print("-" * 40)  # Optional separator between reviews
+        else:
+            print("No reviews found for your search criteria.")
+
+        
+    def get_food_name(self, foodno):
+        """
+        Retrieves the name of a food item from the 'food' table based on its 'foodno'.
+
+        Args:
+            foodno (int): The ID of the food item.
+
+        Returns:
+            str (or None): The name of the food item if found, otherwise None.
+        """
+
+        if foodno is not None:
+            try:
+                # Assuming a connection to the database is established elsewhere (e.g., in the class constructor)
+                self.cursor.execute("SELECT foodname FROM food WHERE foodno = %s", (foodno,))
+                result = self.cursor.fetchone()
+                if result:
+                    return result[0]  # Return the food name from the first element of the fetched row
+                else:
+                    return None  # Food not found
+
+            except Exception as e:
+                print(f"An error occurred while retrieving food name: {e}")
+                return None  # Handle potential database errors gracefully
+
+        else:
+            return None  # No foodno provided, return None
+        
+    def get_establishment_name(self, estno):
+        """
+        Retrieves the name of an establishment from the 'establishment' table based on its 'estno'.
+
+        Args:
+            estno (int): The ID of the establishment.
+
+        Returns:
+            str: The name of the establishment.
+        """
+
+        try:
+            # Assuming a connection to the database is established elsewhere (e.g., in the class constructor)
+            self.cursor.execute("SELECT estname FROM establishment WHERE estno = %s", (estno,))
+            result = self.cursor.fetchone()
+            if result:
+                return result[0]  # Return the establishment name from the first element of the fetched row
+            else:
+                raise ValueError("Establishment not found")  # Raise a specific exception if not found
+
+        except Exception as e:
+            print(f"An error occurred while retrieving establishment name: {e}")
+            # Consider handling different exception types more specifically
+            return None  # Or return a different value to indicate an error
+
+
 
 
     def add_review(self, text, rating, date, foodno, estno, userno):
@@ -697,15 +775,38 @@ class FoodReviewCLI:
             print(unit[0], " | ", unit[1])
         print("\n")
 
-    def show_reviews(self):
+    def show_reviews(self, search_text=None):
+        """
+        Displays reviews based on search criteria (optional).
+
+        Args:
+            search_text (str, optional): Text to search for in reviews. Defaults to None (all reviews).
+        """
         cursor = self.connection.cursor()
-        cursor.execute("SELECT * FROM review order by reviewno")
-        food_reviews = cursor.fetchall()
-        print("Here are all the food review. \n \n")
-        print(f"No  | Text Description     | Rating | Review Date | Food No | Est No | User No")
-        for item in food_reviews:
-            print(f"{item[0]:<3} | {item[1]:<20} | {item[2]:<6} | {item[3]}  | {item[4]:<7} | {item[5]:<6} | {item[6]:<3}")
-        print("\n")
+
+        if search_text:
+            # Search by text using LIKE operator
+            sql = "SELECT * FROM review WHERE text LIKE %s ORDER BY reviewno"
+            values = ("%" + search_text + "%",)
+        else:
+            # Retrieve all reviews
+            sql = "SELECT * FROM review ORDER BY reviewno"
+            values = ()
+
+        try:
+            cursor.execute(sql, values)
+            food_reviews = cursor.fetchall()
+            print("Here are the food reviews:")  # Adjusted message
+
+            # Customizable column formatting (modify widths as needed)
+            print(f"{'No':<3} | {'Text Description':<25} | {'Rating':<6} | {'Review Date':<15} | {'Food No':<7} | {'Est No':<6} | {'User No':<3}")
+            for item in food_reviews:
+                print(f"{item[0]:<3} | {item[1]:<25} | {item[2]:<6} | {item[3]} | {item[4]:<7} | {item[5]:<6} | {item[6]:<3}")
+            print("\n")  # Newline after reviews
+        except Exception as e:
+            print(f"Error retrieving reviews: {e}")  # Generic error message
+
+
 
     def show_food_items_from_establishment(self):
         try:
