@@ -52,7 +52,6 @@ class FoodReviewCLI:
                 print("Invalid choice. Please try again.")
                 input("Press Enter to proceed")
 
-
     # Function for the review management
     def review_management_menu(self):
         print("\nReview Management Menu:")
@@ -617,8 +616,8 @@ class FoodReviewCLI:
         print("3. View all food items from an establishment")
         print("4. View all reviews made from an establishment that belong to a food type")
         print("5. View all review made within a specific month")
-        print("6. view all establishments with a high average rating")
-        print("7. view all food items from an  establishment based on price")
+        print("6. View all establishments with a high average rating")
+        print("7. View all food items from an  establishment based on price")
         print("8. Search for a food item")
         print("9. Exit")
         report_choice = int(input("Enter choice: "))
@@ -626,9 +625,18 @@ class FoodReviewCLI:
             print("Going back to main menu")
             self.main_menu()
         elif report_choice == 1:
+            clear()
             self.show_food_establishments()
         elif report_choice == 2:
+            clear()
             self.show_reviews()
+        elif report_choice == 3:
+            self.show_food_items_from_establishment()
+        elif report_choice == 4:
+            self.show_reviews_from_establishment_and_food_type()
+        elif report_choice == 7:
+            clear()
+            self.view_food_from_est_by_price()
         else:
             print("Invalid choice. Please try again.")
             self.report_management_menu()
@@ -638,7 +646,6 @@ class FoodReviewCLI:
             self.report_management_menu()
 
     def show_food_establishments(self):
-        clear()
         cursor = self.connection.cursor()
         cursor.execute("SELECT estno, estname FROM establishment order by estno")
         food_establishments = cursor.fetchall()
@@ -648,7 +655,6 @@ class FoodReviewCLI:
         print("\n")
 
     def show_reviews(self):
-        clear()
         cursor = self.connection.cursor()
         cursor.execute("SELECT * FROM review order by reviewno")
         food_reviews = cursor.fetchall()
@@ -658,7 +664,48 @@ class FoodReviewCLI:
             print(f"{item[0]:<3} | {item[1]:<20} | {item[2]:<6} | {item[3]}  | {item[4]:<7} | {item[5]:<6} | {item[6]:<3}")
         print("\n")
 
+    def show_food_items_from_establishment(self):
+        try:
+            estno = int(input("Enter establishment number: "))
+            sql = """SELECT food.foodno, food.foodname, food.price, food.foodtype
+                    FROM food
+                    WHERE food.estno = %s"""
+            self.cursor.execute(sql, (estno,))
+            food_items = self.cursor.fetchall()
+            if not food_items:
+                print("No food items found for this establishment.")
+            else:
+                print("{:<10} {:<30} {:<10} {:<15}".format("Food No", "Food Name", "Price", "Type"))
+                print("-" * 65)
+                for item in food_items:
+                    print("{:<10} {:<30} {:<10} {:<15}".format(item[0], item[1], item[2], item[3]))
+        except ValueError:
+            print("Invalid input. Please enter a valid number.")
+        except mysql.connector.Error as err:
+            print(f"Database error: {err}")
+    
+    def view_food_from_est_by_price(self):
+        self.show_food_establishments()
+        est_number = int(input("From what establishment would you like to browse by price: "))
+        cursor = self.connection.cursor()
+        cursor.execute("SELECT * FROM food WHERE estno = %s ORDER BY price", (est_number,))
+        food_items = cursor.fetchall()
+        print(f"Here are all the food items from establishment #{est_number}.\n")
+        print(f"No  | Food Name    | Rating | Price | Food Type | Est No ")
+        for item in food_items:
+            print(f"{item[0]:<3} | {item[1]:<12} | {item[2]:<6} | {item[3]:<5}  | {item[4]:<9} | {item[5]:<6}")
+        print("\n")
 
+
+    '''
+    -- 7. View all food items from an establishment arranged according to price;
+    SELECT * FROM food WHERE estno = 3 ORDER BY price;
+    ''' 
+
+
+
+
+################################
 
 # Main Menu System
 cli = FoodReviewCLI("localhost", "root", "killjoy", "foodproject")
