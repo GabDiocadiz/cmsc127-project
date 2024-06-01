@@ -574,7 +574,7 @@ class FoodReviewCLI:
                 print("-" * 75)
                 for item in food_items:
                     price = f"{item[2]:.2f}"
-                    print("{:<10} {:<30} {:<10} {:<15} {:<10}".format(item[0], item[1], price, item[3], item[4]))
+                    print("{:<10} {:<30} {:<10} {:<15} {:<10}".format(item[0], item[1], item[3], item[4], item[5]))
         except ValueError:
             print("Invalid input. Please enter valid numbers.")
         except mysql.connector.Error as err:
