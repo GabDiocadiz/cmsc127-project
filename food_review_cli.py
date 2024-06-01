@@ -545,24 +545,33 @@ class FoodReviewCLI:
 
     # 3. View all food items from an establishment
     def show_food_items_from_establishment(self):
-        try:
-            estno = int(input("Enter establishment number: "))
-            sql = """SELECT food.foodno, food.foodname, food.price, food.foodtype
-                    FROM food
-                    WHERE food.estno = %s"""
-            self.cursor.execute(sql, (estno,))
-            food_items = self.cursor.fetchall()
-            if not food_items:
-                print("No food items found for this establishment.")
-            else:
-                print("{:<10} {:<30} {:<10} {:<15}".format("Food No", "Food Name", "Price", "Type"))
-                print("-" * 65)
-                for item in food_items:
-                    print("{:<10} {:<30} {:<10} {:<15}".format(item[0], item[1], item[2], item[3]))
-        except ValueError:
-            print("Invalid input. Please enter a valid number.")
-        except mysql.connector.Error as err:
-            print(f"Database error: {err}")
+        while True:
+            try:
+                estno = int(input("Enter establishment number: "))
+
+                self.cursor.execute("SELECT estno FROM establishment WHERE estno = %s", (estno,))
+                if not self.cursor.fetchone():
+                    print("Establishment number does not exist. Please enter a valid establishment number.")
+                    continue
+
+                sql = """SELECT food.foodno, food.foodname, food.price, food.foodtype
+                        FROM food
+                        WHERE food.estno = %s"""
+                self.cursor.execute(sql, (estno,))
+                food_items = self.cursor.fetchall()
+                if not food_items:
+                    print("No food items found for this establishment.")
+                else:
+                    print("| {:<10} | {:<30} | {:<10} | {:<15} |".format("Food No", "Food Name", "Price", "Type"))
+                    print("|" + "-"*12 + "|" + "-"*32 + "|" + "-"*12 + "|" + "-"*17 + "|")
+                    for item in food_items:
+                        print("| {:<10} | {:<30} | {:<10} | {:<15} |".format(item[0], item[1], item[2], item[3]))
+                break
+            except ValueError:
+                print("Invalid input. Please enter a valid number.")
+            except mysql.connector.Error as err:
+                print(f"Database error: {err}")
+                break
     
     # 4. View all food items from an establishment that belong to a food type {meat | veg | etc.}.
     def show_food_items_from_establishment_and_food_type(self):
@@ -580,20 +589,29 @@ class FoodReviewCLI:
             for food_type in food_types:
                 print(food_type[0])
             
-            foodtype = input("Enter food type: ")
+            while True:
+                foodtype = input("Enter food type: ")
 
-            sql = """SELECT * FROM food WHERE estno = %s AND foodtype = %s"""
-            self.cursor.execute(sql, (estno, foodtype))
-            food_items = self.cursor.fetchall()
+                sql = """SELECT * FROM food WHERE estno = %s AND foodtype = %s"""
+                self.cursor.execute(sql, (estno, foodtype))
+                food_items = self.cursor.fetchall()
 
-            if not food_items:
-                print("No food items found for this establishment and food type.")
-            else:
-                print("{:<10} {:<30} {:<10} {:<15} {:<10}".format("Food No", "Food Name", "Price", "Type", "Est No"))
-                print("-" * 75)
-                for item in food_items:
-                    price = f"{item[2]:.2f}"
-                    print("{:<10} {:<30} {:<10} {:<15} {:<10}".format(item[0], item[1], item[3], item[4], item[5]))
+                if not food_items:
+                    print("No food items found for this establishment and food type.")
+                    retry = input("Would you like to enter another food type? (y/n): ")
+                    if retry.lower() != 'y':
+                        break
+                else:
+                    # Determine the maximum width needed for the Price column
+                    max_price_length = max(len(f"{item[3]:.2f}") for item in food_items)
+                    price_header = "Price".ljust(max_price_length)
+
+                    print(f"| Food No | Food Name          | Rating | {price_header} | Food Type       | Est No |")
+                    print(f"|---------|--------------------|--------|{'-' * (max_price_length + 2)}|-----------------|--------|")
+                    for item in food_items:
+                        price = f"{item[3]:.2f}".ljust(max_price_length)
+                        print(f"| {item[0]:<7} | {item[1]:<18} | {item[2]:<6} | {price} | {item[4]:<15} | {item[5]:<6} |")
+                    break
         except ValueError:
             print("Invalid input. Please enter valid numbers.")
         except mysql.connector.Error as err:
