@@ -1,6 +1,6 @@
 import mysql.connector
 import datetime
-from tabulate import tabulate  # Import tabulate library
+from tabulate import tabulate
 from os import system, name
 
 # Function to clear the screen
@@ -25,6 +25,7 @@ class FoodReviewCLI:
         except mysql.connector.Error as err:
             print(f"Error connecting to database: {err}")
             exit()
+        self.authenticated = False
 
     def authentication_menu(self):
         while not self.authenticated:
@@ -51,7 +52,6 @@ class FoodReviewCLI:
                 print("Invalid choice. Please try again.")
                 input("Press Enter to proceed")
 
-    # Function for the main menu
     def main_menu(self):
         while True:
             clear()
@@ -76,7 +76,6 @@ class FoodReviewCLI:
                 self.food_item_management_menu()
             elif choice == '4':
                 self.report_management_menu()
-
             elif choice == '5':
                 self.user_management_menu()
             elif choice == '0':
@@ -85,7 +84,7 @@ class FoodReviewCLI:
             else:
                 print("Invalid choice. Please try again.")
                 input("Press Enter to proceed")
-    
+
     # Sign-Up Method
     def sign_up(self):
         print('Sign Up:')
@@ -1406,4 +1405,5 @@ class FoodReviewCLI:
 # Main Menu System
 cli = FoodReviewCLI("localhost", "foodproject", "cmsc127", "foodproject")
 cli.averating()
+cli.authentication_menu()
 cli.main_menu()
