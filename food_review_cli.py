@@ -499,7 +499,7 @@ class FoodReviewCLI:
 
     def add_review(self):
         global current_userno
-        # Get user input for review details (text, rating, date, estno, userno)
+        # Get user input for review details (text, rating, date, estno)
         while True:
             try:
                 rating = int(input("Enter rating (1-5): "))
@@ -523,9 +523,9 @@ class FoodReviewCLI:
             return
 
         try:
-            # Check if establishment and user exist
-            check_est_query = "SELECT estno FROM establishment WHERE estno = %s"
+            # Check if establishment
             cursor = self.connection.cursor()
+            check_est_query = "SELECT estno FROM establishment WHERE estno = %s"
             cursor.execute(check_est_query, (estno,))
             est_exists = cursor.fetchone()
             # Check if the food belongs to the establishment from the review
@@ -537,7 +537,7 @@ class FoodReviewCLI:
                 food_exists = True
 
             if not est_exists or not food_exists:
-                raise ValueError("Invalid establishment or user ID.")
+                raise ValueError("Invalid establishment ID.")
 
             # Insert review
             if foodno != '0':
@@ -843,7 +843,7 @@ class FoodReviewCLI:
 
         if report_choice == '0':
             print("Going back to main menu")
-            self.main_menu()
+            return
         elif report_choice == '1':
             clear()
             self.show_food_establishments()
@@ -868,7 +868,7 @@ class FoodReviewCLI:
             input("Invalid choice. Press Enter to proceed")
             self.report_management_menu()
 
-        if int(report_choice) in [1, 2, 3, 4, 5, 6, 7, 8]:
+        if int(report_choice) in [0, 1, 2, 3, 4, 5, 6, 7, 8]:
             input("Press Enter to proceed back to main menu")
             self.main_menu()
 
@@ -1283,9 +1283,8 @@ class FoodReviewCLI:
         print("          User Generation Menu          ")
         print("="*40)
         print("[1] View all Users")
-        print("[2] Create a new user")
-        print("[3] Update password")
-        print("[4] Delete user")
+        print("[2] Update password")
+        print("[3] Delete user")
         print("[0] Return to main menu")
         print("="*40)
         report_choice = input(">> Enter choice: ")
@@ -1293,22 +1292,19 @@ class FoodReviewCLI:
 
         if report_choice == '0':
             print("Returning to main menu")
-            self.main_menu()
+            return
         elif report_choice == '1':
             clear()
             self.show_users()
         elif report_choice == '2':
-            clear()
-            self.add_user()
-        elif report_choice == '3':
             self.update_password()
-        elif report_choice == '4':
+        elif report_choice == '3':
             self.delete_user()
         else:
             input("Invalid choice. Press Enter to proceed")
             self.report_management_menu()
 
-        if int(report_choice) in [1, 2, 3, 4]:
+        if int(report_choice) in [0, 1, 2, 3]:
             input("Press Enter to proceed back to main menu")
             self.main_menu()
 
@@ -1328,15 +1324,6 @@ class FoodReviewCLI:
         for unit in users:
             print(f"| {unit[0]:<3} | {unit[1]:<{max_username_length}} |")
         print("\n")
-
-    # Function to show all users
-    def add_user(self):
-        print('You are going to create a new user.')
-        username = input("Enter username: ")
-        password = input("Enter password: ")
-        cursor = self.connection.cursor()
-        cursor.execute("INSERT INTO `user` (`username`, `password`) VALUES (%s, %s)", (username, password))
-        print("User successfully created.")
 
     # User validation
     def validate_user(self, username, password):
