@@ -25,6 +25,66 @@ class FoodReviewCLI:
         except mysql.connector.Error as err:
             print(f"Error connecting to database: {err}")
             exit()
+
+    def authentication_menu(self):
+        while not self.authenticated:
+            clear()
+            print("\n" + "="*40)
+            print("          Welcome to Food Review CLI          ")
+            print("="*40)
+            print("[1] Sign Up")
+            print("[2] Sign In")
+            print("[0] Exit")
+            print("="*40)
+            choice = input(">> Enter your choice: ")
+            print("="*40)
+
+            if choice == '1':
+                self.sign_up()
+            elif choice == '2':
+                if self.sign_in():
+                    self.authenticated = True
+            elif choice == '0':
+                print("Exiting Food Review CLI.")
+                exit()
+            else:
+                print("Invalid choice. Please try again.")
+                input("Press Enter to proceed")
+
+    # Function for the main menu
+    def main_menu(self):
+        while True:
+            clear()
+            print("\n" + "="*40)
+            print("          Main Menu - Food Review          ")
+            print("="*40)
+            print("[1] Review Management")
+            print("[2] Establishment Management")
+            print("[3] Food Item Management")
+            print("[4] Report Generation")
+            print("[5] User Management")
+            print("[0] Exit")
+            print("="*40)
+            choice = input(">> Enter your choice: ")
+            print("="*40)
+
+            if choice == '1':
+                self.review_management_menu()
+            elif choice == '2':
+                self.establishment_management_menu()
+            elif choice == '3':
+                self.food_item_management_menu()
+            elif choice == '4':
+                self.report_management_menu()
+
+            elif choice == '5':
+                self.user_management_menu()
+            elif choice == '0':
+                print("Exiting Food Review CLI.")
+                exit()
+            else:
+                print("Invalid choice. Please try again.")
+                input("Press Enter to proceed")
     
     # Sign-Up Method
     def sign_up(self):
@@ -63,71 +123,40 @@ class FoodReviewCLI:
         self.cursor.execute("UPDATE establishment SET averating = COALESCE((SELECT averating FROM (SELECT estno, AVG(rating) AS averating FROM review GROUP BY estno) sq WHERE establishment.estno = sq.estno), 0)")
         self.cursor.execute("UPDATE food SET averating = COALESCE((SELECT averating FROM (SELECT foodno, AVG(rating) AS averating FROM review GROUP BY foodno) sq WHERE food.foodno = sq.foodno), 0)")
 
-    # Function for the main menu
-    def main_menu(self):
+    # Function for the review management
+    def review_management_menu(self):
         while True:
             clear()
             print("\n" + "="*40)
-            print("          Main Menu - Food Review          ")
+            print("        Review Management Menu        ")
             print("="*40)
-            print("[1] Review Management")
-            print("[2] Establishment Management")
-            print("[3] Food Item Management")
-            print("[4] Report Generation")
-            print("[5] User Management")
-            print("[0] Exit")
+            print("[1] Add Review")
+            print("[2] Update Review")
+            print("[3] Delete Review")
+            print("[0] Back to Main Menu")
             print("="*40)
             choice = input(">> Enter your choice: ")
             print("="*40)
 
-            if choice == '1':
-                self.review_management_menu()
-            elif choice == '2':
-                self.establishment_management_menu()
-            elif choice == '3':
-                self.food_item_management_menu()
-            elif choice == '4':
-                self.report_management_menu()
+            if choice == '0':
+                return  # Exit function if user chooses '0'
 
-            elif choice == '5':
-                self.user_management_menu()
-            elif choice == '0':
-                print("Exiting Food Review CLI.")
-                exit()
-            else:
-                print("Invalid choice. Please try again.")
+            review_type = input("Enter review type (establishment (E)/food (F)) or 'b' to go back: ")
+
+            if review_type.lower() == "b":
+                continue  # Go back to the review management menu
+
+            # Validate review type (establishment or food)
+            if review_type.lower() not in ("e", "f"):
+                print("Invalid review type. Please enter 'E' for establishment or 'F' for food.")
                 input("Press Enter to proceed")
+                continue  # Go back to the review management menu
 
-    # Function for the review management
-    def review_management_menu(self):
-        clear()
-        print("\n" + "="*40)
-        print("        Review Management Menu        ")
-        print("="*40)
-        print("[1] Add Review")
-        print("[2] Update Review")
-        print("[3] Delete Review")
-        print("[0] Back to Main Menu")
-        print("="*40)
-        choice = input(">> Enter your choice: ")
-        print("="*40)
-
-        review_type = input("Enter review type (establishment/food) or 'b' to go back: ")
-
-        if review_type.lower() == "b":
-            return  # Exit function if user chooses 'b'
-
-        # Validate review type (establishment or food)
-        if review_type.lower() not in ("establishment", "food"):
-            print("Invalid review type. Please enter 'establishment' or 'food'.")
-            self.review_management_menu()  # Recursively call for valid input
-            return  # Exit after recursive call
-
-        # Handle menu options based on review type
-        if review_type.lower() == "establishment":
-            self.handle_establishment_review_options(choice)
-        elif review_type.lower() == "food":
-            self.handle_food_review_options(choice)
+            # Handle menu options based on review type
+            if review_type.lower() == "e":
+                self.handle_establishment_review_options(choice)
+            elif review_type.lower() == "f":
+                self.handle_food_review_options(choice)
 
     def handle_establishment_review_options(self, choice):
         if choice == '1':
@@ -138,11 +167,9 @@ class FoodReviewCLI:
             reviewno = int(input("Enter review ID to delete: "))
             self.delete_review(reviewno)
             self.averating()
-        elif choice == '0':
-            pass  # Back to main menu
         else:
             print("Invalid choice. Please try again.")
-            self.handle_establishment_review_options(choice)  # Recursive call for valid input within establishment options
+            self.handle_establishment_review_options(choice)
 
     def handle_food_review_options(self, choice):
         if choice == '1':
