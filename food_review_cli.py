@@ -55,6 +55,7 @@ class FoodReviewCLI:
                 self.food_item_management_menu()
             elif choice == '4':
                 self.report_management_menu()
+
             elif choice == '5':
                 self.user_management_menu()
             elif choice == '0':
@@ -316,6 +317,25 @@ class FoodReviewCLI:
             print(f"Error updating review establishment & food item number: {err}")
 
     def delete_review(self, reviewno):
+        print("Enter credentials to delete your review.")
+        username = input("Enter username: ")
+        password = input("Enter current password: ")
+
+        validated = self.validate_user(username, password)
+
+        if validated == False:
+            input("Invalid username or password. Press Enter to return.")
+            self.review_management_menu()
+
+        self.cursor.execute("select userno from user WHERE username = %s", (username,))
+        input_user_number = self.cursor.fetchone()
+        self.cursor.execute("select userno from review WHERE reviewno = %s", (reviewno,))
+        review_user_number = self.cursor.fetchone()
+
+        if input_user_number != review_user_number:
+            input("Invalid username or password. Press Enter to return.")
+            self.review_management_menu()
+
         try:
         # Confirmation prompt
             confirm = input(f"Are you sure you want to delete review #{reviewno}? (y/n): ")
