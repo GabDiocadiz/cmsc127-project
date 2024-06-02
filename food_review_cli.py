@@ -39,7 +39,8 @@ class FoodReviewCLI:
             print("2. Establishment Management")
             print("3. Food Item Management")
             print("4. Report Generation")
-            print("5. Exit")
+            print("5. User Management")
+            print("6. Exit")
             choice = input("Enter your choice: ")
 
             if choice == '1':
@@ -50,7 +51,10 @@ class FoodReviewCLI:
                 self.food_item_management_menu()
             elif choice == '4':
                 self.report_management_menu()
+                user_management_menu
             elif choice == '5':
+                self.user_management_menu()
+            elif choice == '6':
                 print("Exiting Food Review CLI.")
                 exit()
             else:
@@ -456,14 +460,14 @@ class FoodReviewCLI:
     def report_management_menu(self):
         clear()
         print("Report Generation Menu:")
-        print("1. View all food establishments;")
-        print("2. View all food reviews for an establishment or a food item;")
-        print("3. View all food items from an establishment;")
-        print("4. View all food items from an establishment that belong to a food type {meat | veg | etc.};")
-        print("5. View all reviews made within a month for an establishment or a food item;")
-        print("6. View all establishments with a high average rating (rating >= 4). (ratings from 1-5; highest is 5);")
-        print("7. View all food items from an establishment arranged according to price;")
-        print("8. Search food items from any establishment based on a given price range and/or food type.")
+        print("1. View all food establishments")
+        print("2. View all food reviews for an establishment or a food item")
+        print("3. View all food items from an establishment")
+        print("4. View all food items from an establishment that belong to a food type {meat | veg | etc.}")
+        print("5. View all reviews made within a month for an establishment or a food item")
+        print("6. View all establishments with a high average rating (rating >= 4). (ratings from 1-5; highest is 5)")
+        print("7. View all food items from an establishment arranged according to price")
+        print("8. Search food items from any establishment based on a given price range and/or food type")
         print("9. Exit")
         report_choice = (input("Enter choice: "))
         if report_choice == '9':
@@ -565,7 +569,6 @@ class FoodReviewCLI:
             print("\n")
         else:
             print("There are food reviews that match your criteria \n")
-
 
     # 3. View all food items from an establishment
     def show_food_items_from_establishment(self):
@@ -902,6 +905,110 @@ class FoodReviewCLI:
             print("\n")
         else:
             print("There is no food item that matches your criteria.")
+
+    def user_management_menu(self):
+        clear()
+        print("User Generation Menu:")
+        print("0. Return to main menu")
+        print("1. View all Users")
+        print("2. Create a new user")
+        print("3. Update password")
+        print("4. Delete user")
+        report_choice = (input("Enter choice: "))
+        if report_choice == '0':
+            print("Returning to main menu")
+            self.main_menu()
+        elif report_choice == '1':
+            clear()
+            self.show_users()
+        elif report_choice == '2':
+            clear()
+            self.add_user()
+        elif report_choice == '3':
+            self.update_password()
+        elif report_choice == '4':
+            self.delete_user()
+        else:
+            input("Invalid choice. Press Enter to proceed")
+            self.report_management_menu()
+
+        if int(report_choice) in [1, 2, 3, 4]:
+            input("Press Enter to proceed back to main menu")
+            self.main_menu()
+
+    # Function to show all users
+    def show_users(self):
+        cursor = self.connection.cursor()
+        cursor.execute("SELECT userno, username FROM user")
+        users = cursor.fetchall()
+        print("Users:")
+
+        max_username_length = max(len(unit[1]) for unit in users)
+        max_username_length = max(max_username_length, len("Food Name"))
+        username_header = "Food Name".ljust(max_username_length)
+
+        print(f"| No  | {username_header} |")
+        print(f"|-----|{'-' * (max_username_length + 2)}|")
+        for unit in users:
+            print(f"| {unit[0]:<3} | {unit[1]:<{max_username_length}} |")
+        print("\n")
+
+    # Function to show all users
+    def add_user(self):
+        print('You are going to create a new user.')
+        username = input("Enter username: ")
+        password = input("Enter password: ")
+        cursor = self.connection.cursor()
+        cursor.execute("INSERT INTO `user` (`username`, `password`) VALUES (%s, %s)", (username, password))
+        print("User successfully created.")
+
+    # Function to update a password of an existing user
+    def update_password(self):
+        print('You are going to update the password of a user.')
+        username = input("Enter username: ")
+        password = input("Enter current password: ")
+
+        cursor = self.connection.cursor()
+        cursor.execute("SELECT * FROM user")
+        users = cursor.fetchall()
+
+        validated = False
+        for unit in users:
+            if username == unit[1]:
+                if password == unit[2]:
+                    validated = True
+                    new_password = input("Enter new password: ")
+
+        if validated == False:
+            input("Invalid username or password. Press Enter to return.")
+            self.user_management_menu()
+        else:
+            cursor.execute("UPDATE user SET password = %s WHERE username = %s", (new_password, username))
+            print("User password successfully changed.")
+
+    def delete_user(self):
+        print('You are going to delete a user. Enter the proper credentials to delete your account.')
+        username = input("Enter username: ")
+        password = input("Enter current password: ")
+
+        cursor = self.connection.cursor()
+        cursor.execute("SELECT * FROM user")
+        users = cursor.fetchall()
+
+        validated = False
+        userno = None
+        for unit in users:
+            if username == unit[1]:
+                if password == unit[2]:
+                    validated = True
+                    userno = unit[0]
+
+        if validated == False:
+            input("Invalid username or password. Press Enter to return.")
+            self.user_management_menu()
+        else:
+            cursor.execute("DELETE from user WHERE userno = %s", (userno,))
+            input("User successfully Deleted. Press Enter to return.")
 
 ################################
 
