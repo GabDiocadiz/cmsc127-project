@@ -325,30 +325,30 @@ class FoodReviewCLI:
 
         if validated == False:
             input("Invalid username or password. Press Enter to return.")
-            self.review_management_menu()
+            return
+        else:
+            self.cursor.execute("select userno from user WHERE username = %s", (username,))
+            input_user_number = self.cursor.fetchone()
+            self.cursor.execute("select userno from review WHERE reviewno = %s", (reviewno,))
+            review_user_number = self.cursor.fetchone()
 
-        self.cursor.execute("select userno from user WHERE username = %s", (username,))
-        input_user_number = self.cursor.fetchone()
-        self.cursor.execute("select userno from review WHERE reviewno = %s", (reviewno,))
-        review_user_number = self.cursor.fetchone()
+            if input_user_number != review_user_number:
+                input("Invalid username or password. Press Enter to return.")
+                self.review_management_menu()
 
-        if input_user_number != review_user_number:
-            input("Invalid username or password. Press Enter to return.")
-            self.review_management_menu()
+            try:
+            # Confirmation prompt
+                confirm = input(f"Are you sure you want to delete review #{reviewno}? (y/n): ")
+                if confirm.lower() != 'y':
+                    print("Deletion cancelled.")
+                    return
 
-        try:
-        # Confirmation prompt
-            confirm = input(f"Are you sure you want to delete review #{reviewno}? (y/n): ")
-            if confirm.lower() != 'y':
-                print("Deletion cancelled.")
-                return
-
-            sql = "DELETE FROM review WHERE reviewno = %s"
-            self.cursor.execute(sql, (reviewno,))
-            self.connection.commit()
-            print("Review deleted successfully!")
-        except mysql.connector.Error as err:
-            print(f"Error deleting review: {err}")
+                sql = "DELETE FROM review WHERE reviewno = %s"
+                self.cursor.execute(sql, (reviewno,))
+                self.connection.commit()
+                input("Review deleted successfully!")
+            except mysql.connector.Error as err:
+                print(f"Error deleting review: {err}")
 
     # Establishment Management Functions
     # Function to add an establishment
