@@ -294,13 +294,48 @@ class FoodReviewCLI:
                             print("Invalid price. Please enter a non-negative number.")
                     except ValueError:
                         print("Invalid input. Please enter a number.")
-                foodtype = input("Enter food type: ")
-                estno = int(input("Enter establishment number: "))
-                self.add_food_item(foodname, price, foodtype, estno)
-                self.averating()
+                
+                self.cursor.execute("SELECT DISTINCT foodtype FROM food")
+                food_types = self.cursor.fetchall()                
+                if not food_types:
+                    print("No food types found.")
+                    return
+                print("Food types:")
+                valid_food_types = [food_type[0] for food_type in food_types]
+                for food_type in valid_food_types:
+                    print(food_type)
+                
+                while True:
+                    foodtype = input("Enter food type: ")
+                    if foodtype not in valid_food_types:
+                        print("Invalid food type. Please enter a valid food type.")
+                        continue
+                    break
+
+                while True:
+                    estno = input("Enter the establishment number: ")
+                    if not estno.isdigit():
+                        print("Invalid input. Please enter a valid number.")
+                        continue
+                    estno = int(estno)
+                    if estno != 0:
+                        self.cursor.execute("SELECT estno FROM establishment WHERE estno = %s", (estno,))
+                        if not self.cursor.fetchone():
+                            print("Establishment number does not exist. Please enter a valid establishment number.")
+                            continue
+                    self.add_food_item(foodname, price, foodtype, estno)
+                    self.averating()
+                    break
             elif choice == '2':
                 # Get food item name for price update
-                foodname = input("Enter food item name to update price: ")
+                while True:
+                    foodname = input("Enter the exact food name to update price: ")
+                    self.cursor.execute("SELECT foodname FROM food WHERE foodname = %s", (foodname,))
+                    if not self.cursor.fetchone():
+                        print("Food item does not exist. Please enter a valid food name. Example: food 1.")
+                        continue
+                    break
+
                 while True:
                     try:
                         new_price = float(input("Enter new price: "))
@@ -313,8 +348,14 @@ class FoodReviewCLI:
                         print("Invalid input. Please enter a number.")
             elif choice == '3':
                 # Get food item name for deletion
-                foodname = input("Enter food item name to delete: ")
-                self.delete_food_item(foodname)
+                while True:
+                    foodname = input("Enter the exact food name to update price: ")
+                    self.cursor.execute("SELECT foodname FROM food WHERE foodname = %s", (foodname,))
+                    if not self.cursor.fetchone():
+                        print("Food item does not exist. Please enter a valid food name.")
+                        return
+                    self.delete_food_item(foodname)
+                    break
             elif choice == '4':
                 self.search_food_items()
             elif choice == '0':
@@ -707,13 +748,13 @@ class FoodReviewCLI:
         try:
             reviewno = int(input("Enter review ID to delete: "))
         except ValueError:
-            input("Invalid input. Press enter to return")
+            print("Invalid input.")
             return
 
         self.cursor.execute("SELECT userno FROM review WHERE reviewno = %s", (reviewno,))
         review_userno = self.cursor.fetchone()
         if current_userno != review_userno[0]:
-            input("This is not your review, You are unable update this.\nPress Enter to return.")
+            print("This is not your review, You are unable to update this.")
             return
 
         try:
@@ -1076,8 +1117,8 @@ class FoodReviewCLI:
     # 5. Function to view all reviews made within a month for an establishment or a food item;
     def show_reviews_within_month(self):
         try:
+            print("You are looking to view all the reviews made within a specific month.")
             while True:
-                print("You are looking to view all the reviews made within a specific month.")
                 estno = input("Enter the establishment number you want to view the rating of \n(or 0 to look to see the reviews of a specific food item): ")
                 if not estno.isdigit():
                     print("Invalid input. Please enter a valid number.")
