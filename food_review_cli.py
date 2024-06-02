@@ -884,11 +884,14 @@ class FoodReviewCLI:
     # 1. View all food establishments
     def show_food_establishments(self):
         cursor = self.connection.cursor()
-        cursor.execute("SELECT estno, estname FROM establishment order by estno")
+        cursor.execute("SELECT estno, estname FROM establishment ORDER BY estno")
         food_establishments = cursor.fetchall()
-        print("Establishments:")
-        for unit in food_establishments:
-            print(unit[0], " | ", unit[1])
+
+        if food_establishments:
+            headers = ["Establishment No", "Establishment Name"]
+            print(tabulate(food_establishments, headers=headers, tablefmt="grid"))
+        else:
+            print("No establishments found.")
         print("\n")
 
     # 2. View all food reviews for an establishment or a food item
@@ -921,7 +924,7 @@ class FoodReviewCLI:
             cursor.execute("SELECT * FROM review where estno = %s order by reviewno", (est_choice,))
             food_reviews = cursor.fetchall()
         elif choice == 2:
-            self.show_food_items_from_establishment()
+            # self.show_food_items_from_establishment()
             food_choice = (input("Enter the index of the food item that that you want to see reviews of : "))
 
             # Validate choice
@@ -938,17 +941,17 @@ class FoodReviewCLI:
             input("Invalid choice. Press enter to return.")
             self.report_management_menu()
 
-        if food_reviews != []:
-            print("Here are all the food review. \n \n")
-            print(f"No  | Text Description     | Rating | Review Date | Food No | Est No | User No")
+        if food_reviews:
+            headers = ["No", "Text Description", "Rating", "Review Date", "Food No", "Est No", "User No"]
+            table = []
             for item in food_reviews:
-                if item[4] != None:
-                    print(f"{item[0]:<3} | {item[1]:<20} | {item[2]:<6} | {item[3]}  | {item[4]:<7} | {item[5]:<6} | {item[6]:<3}")
-                else:
-                    print(f"{item[0]:<3} | {item[1]:<20} | {item[2]:<6} | {item[3]}  | None    | {item[5]:<6} | {item[6]:<3}")
+                food_no = item[4] if item[4] is not None else "None"
+                table.append([item[0], item[1], item[2], item[3], food_no, item[5], item[6]])
+            print("Here are all the food reviews:\n")
+            print(tabulate(table, headers=headers, tablefmt="grid"))
             print("\n")
         else:
-            print("There are food reviews that match your criteria \n")
+            print("There are no food reviews that match your criteria.\n")
 
     # 3. View all food items from an establishment
     def show_food_items_from_establishment(self):
@@ -966,13 +969,13 @@ class FoodReviewCLI:
                         WHERE food.estno = %s"""
                 self.cursor.execute(sql, (estno,))
                 food_items = self.cursor.fetchall()
+
                 if not food_items:
                     print("No food items found for this establishment.")
                 else:
-                    print("| {:<10} | {:<30} | {:<10} | {:<15} |".format("Food No", "Food Name", "Price", "Type"))
-                    print("|" + "-"*12 + "|" + "-"*32 + "|" + "-"*12 + "|" + "-"*17 + "|")
-                    for item in food_items:
-                        print("| {:<10} | {:<30} | {:<10} | {:<15} |".format(item[0], item[1], item[2], item[3]))
+                    headers = ["Food No", "Food Name", "Price", "Type"]
+                    table = [[item[0], item[1], item[2], item[3]] for item in food_items]
+                    print(tabulate(table, headers=headers, tablefmt="grid"))
                 break
             except ValueError:
                 print("Invalid input. Please enter a valid number.")
