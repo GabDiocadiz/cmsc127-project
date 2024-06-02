@@ -141,7 +141,7 @@ class FoodReviewCLI:
             if choice == '0':
                 return  # Exit function if user chooses '0'
 
-            review_type = input("Enter review type (establishment (E)/food (F)) or 'b' to go back: ")
+            review_type = input("\nEnter review type:\n[E] Establishment\n[F] Food\n[b] Back to Review Management Menu\n>> Enter your choice: ")
 
             if review_type.lower() == "b":
                 continue  # Go back to the review management menu
