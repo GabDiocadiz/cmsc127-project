@@ -12,6 +12,8 @@ def clear():
 
 class FoodReviewCLI:
     # Function to connect to database
+    global current_userno
+    current_userno = None
     def __init__(self, host, user, password, database):
         try:
             self.connection = mysql.connector.connect(
@@ -137,6 +139,7 @@ class FoodReviewCLI:
 
     # Sign-In Method
     def sign_in(self):
+        global current_userno
         while True:
             clear()
             width = 40
@@ -155,6 +158,7 @@ class FoodReviewCLI:
                 cursor.execute("SELECT * FROM user WHERE username = %s AND password = %s", (username, password))
                 user = cursor.fetchone()
                 if user:
+                    current_userno = user[0]
                     print("Sign in successful!")
                     return True
                 else:
@@ -494,6 +498,7 @@ class FoodReviewCLI:
             return None  # Or return a different value to indicate an error
 
     def add_review(self):
+        global current_userno
         # Get user input for review details (text, rating, date, estno, userno)
         while True:
             try:
@@ -513,7 +518,6 @@ class FoodReviewCLI:
             return
         try:
             estno = int(input("Enter establishment number: "))
-            userno = int(input("Enter user number: "))
         except ValueError:
             input("Invalid input. Press enter to return")
             return
@@ -521,12 +525,9 @@ class FoodReviewCLI:
         try:
             # Check if establishment and user exist
             check_est_query = "SELECT estno FROM establishment WHERE estno = %s"
-            check_user_query = "SELECT userno FROM user WHERE userno = %s"
             cursor = self.connection.cursor()
             cursor.execute(check_est_query, (estno,))
             est_exists = cursor.fetchone()
-            cursor.execute(check_user_query, (userno,))
-            user_exists = cursor.fetchone()
             # Check if the food belongs to the establishment from the review
             if foodno != '0':
                 check_food_query = "SELECT foodno FROM food WHERE foodno = %s and estno =%s"
@@ -535,19 +536,19 @@ class FoodReviewCLI:
             else:
                 food_exists = True
 
-            if not est_exists or not user_exists or not food_exists:
+            if not est_exists or not food_exists:
                 raise ValueError("Invalid establishment or user ID.")
 
             # Insert review
             if foodno != '0':
                 sql = """INSERT INTO review (text, rating, date, foodno, estno, userno)
                         VALUES (%s, %s, STR_TO_DATE(%s, '%d-%m-%Y'), %s, %s, %s)"""
-                self.cursor.execute(sql, (text, rating, date, foodno, estno, userno))
+                self.cursor.execute(sql, (text, rating, date, foodno, estno, current_userno))
                 self.connection.commit()
             else:
                 sql = """INSERT INTO review (text, rating, date, foodno, estno, userno)
                         VALUES (%s, %s, STR_TO_DATE(%s, '%d-%m-%Y'), %s, %s, %s)"""
-                self.cursor.execute(sql, (text, rating, date, None, estno, userno))
+                self.cursor.execute(sql, (text, rating, date, None, estno, current_userno))
                 self.connection.commit()
             print("Review added successfully!")
         except ValueError as e:
@@ -557,12 +558,19 @@ class FoodReviewCLI:
         input("\nPress Enter to continue.")
 
     def update_review(self):
+        global current_userno
         print("You are going to update a review.")
         # Get review ID for update
         try:
             reviewno = int(input("Enter review ID to update: "))
         except ValueError:
             input("Invalid input. Press enter to return")
+            return
+
+        self.cursor.execute("SELECT userno FROM review WHERE reviewno = %s", (reviewno,))
+        review_userno = self.cursor.fetchone()
+        if current_userno != review_userno[0]:
+            input("This is not your review, You are unable update this.\nPress Enter to return.")
             return
 
         # Prompt user for specific update (text, rating, estno, foodno) then validate
@@ -648,6 +656,12 @@ class FoodReviewCLI:
             reviewno = int(input("Enter review ID to delete: "))
         except ValueError:
             input("Invalid input. Press enter to return")
+            return
+
+        self.cursor.execute("SELECT userno FROM review WHERE reviewno = %s", (reviewno,))
+        review_userno = self.cursor.fetchone()
+        if current_userno != review_userno[0]:
+            input("This is not your review, You are unable update this.\nPress Enter to return.")
             return
 
         try:
