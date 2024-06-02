@@ -31,6 +31,10 @@ class FoodReviewCLI:
             exit()
         self.authenticated = False
 
+    ############################
+    # Authentication Functions #
+    ############################
+
     # Function for the user sign-in Menu
     def authentication_menu(self):
         while not self.authenticated:
@@ -54,51 +58,13 @@ class FoodReviewCLI:
                     self.authenticated = True
             elif choice == '0':
                 print("Exiting Food Review CLI.")
+                self.close()
                 exit()
             else:
                 print("Invalid choice. Please try again.")
                 input("Press Enter to proceed")
 
-    # Function for the Main Menu
-    def main_menu(self):
-        global current_userno
-        while True:
-            clear()
-            print("\n" + "="*40)
-            print("          Main Menu - Food Review          ")
-            print("="*40)
-            print("[1] Review Management")
-            print("[2] Establishment Management")
-            print("[3] Food Item Management")
-            print("[4] Report Generation")
-            print("[5] User Management")
-            print("[6] Change user")
-            print("[0] Exit")
-            print("="*40)
-            choice = input(">> Enter your choice: ")
-
-            if choice == '1':
-                self.review_management_menu()
-            elif choice == '2':
-                self.establishment_management_menu()
-            elif choice == '3':
-                self.food_item_management_menu()
-            elif choice == '4':
-                self.report_management_menu()
-            elif choice == '5':
-                self.user_management_menu()
-                if current_userno == None: self.authentication_menu()
-            elif choice == '6':
-                self.authenticated = False
-                self.authentication_menu()
-            elif choice == '0':
-                print("Exiting Food Review CLI.")
-                exit()
-            else:
-                print("Invalid choice. Please try again.")
-                input("Press Enter to proceed")
-
-    # Sign-Up Method
+    # Sign-Up for a new Account
     def sign_up(self):
         while True:
             clear()
@@ -146,7 +112,7 @@ class FoodReviewCLI:
                 print(f"Error creating user: {err}")
                 input("Press Enter to try again")
 
-    # Sign-In Method
+    # Sign-In
     def sign_in(self):
         global current_userno
         while True:
@@ -177,10 +143,49 @@ class FoodReviewCLI:
                 print(f"Error signing in: {err}")
                 return False
 
-    # Function to update the average rating for establishment and food item
-    def averating(self):
-        self.cursor.execute("UPDATE establishment SET averating = COALESCE((SELECT averating FROM (SELECT estno, AVG(rating) AS averating FROM review GROUP BY estno) sq WHERE establishment.estno = sq.estno), 0)")
-        self.cursor.execute("UPDATE food SET averating = COALESCE((SELECT averating FROM (SELECT foodno, AVG(rating) AS averating FROM review GROUP BY foodno) sq WHERE food.foodno = sq.foodno), 0)")
+    ##################
+    # Menu Functions #
+    ##################
+
+    # Function for the Main Menu
+    def main_menu(self):
+        global current_userno
+        while True:
+            clear()
+            print("\n" + "="*40)
+            print("          Main Menu - Food Review          ")
+            print("="*40)
+            print("[1] Review Management")
+            print("[2] Establishment Management")
+            print("[3] Food Item Management")
+            print("[4] Report Generation")
+            print("[5] User Management")
+            print("[6] Change user")
+            print("[0] Exit")
+            print("="*40)
+            choice = input(">> Enter your choice: ")
+
+            if choice == '1':
+                self.review_management_menu()
+            elif choice == '2':
+                self.establishment_management_menu()
+            elif choice == '3':
+                self.food_item_management_menu()
+            elif choice == '4':
+                self.report_management_menu()
+            elif choice == '5':
+                self.user_management_menu()
+                if current_userno == None: self.authentication_menu()
+            elif choice == '6':
+                self.authenticated = False
+                self.authentication_menu()
+            elif choice == '0':
+                print("Exiting Food Review CLI.")
+                self.close()
+                exit()
+            else:
+                print("Invalid choice. Please try again.")
+                input("Press Enter to proceed")
 
     # Function for the review management
     def review_management_menu(self):
@@ -215,7 +220,6 @@ class FoodReviewCLI:
                 self.averating()
                 input("Press Enter to proceed back to main menu")
                 return
-            
 
     # Function for the food establishment management
     def establishment_management_menu(self):
@@ -260,7 +264,6 @@ class FoodReviewCLI:
             if int(choice) in [1, 2, 3, 4]:
                 input("Press Enter to proceed back to main menu")
                 return
-
 
     # Function for the food item management
     def food_item_management_menu(self):
@@ -342,9 +345,6 @@ class FoodReviewCLI:
         report_choice = input(">> Enter choice: ")
         print("="*40)
 
-        if int(report_choice) in [1, 2, 3, 4, 5, 6, 7, 8]:
-            clear()
-
         if report_choice == '0':
             print("Going back to main menu")
             return
@@ -372,14 +372,51 @@ class FoodReviewCLI:
             input("Invalid choice. Press Enter to proceed")
             self.report_management_menu()
 
-        if int(report_choice) in [0, 1, 2, 3, 4, 5, 6, 7, 8]:
+        if int(report_choice) in [1, 2, 3, 4, 5, 6, 7, 8]:
             input("Press Enter to proceed back to main menu")
             self.main_menu()
 
+    # Function for the user management
+    def user_management_menu(self):
+        clear()
+        print("\n" + "="*40)
+        print("          User Generation Menu          ")
+        print("="*40)
+        print("[1] View all Users")
+        print("[2] Update password")
+        print("[3] Delete user")
+        print("[0] Return to main menu")
+        print("="*40)
+        report_choice = input(">> Enter choice: ")
+        print("="*40)
 
+        if report_choice == '0':
+            print("Returning to main menu")
+            return
+        elif report_choice == '1':
+            clear()
+            self.show_users()
+        elif report_choice == '2':
+            self.update_password()
+        elif report_choice == '3':
+            self.delete_user()
+        else:
+            input("Invalid choice. Press Enter to proceed")
+            self.report_management_menu()
+
+        if int(report_choice) in [0, 1, 2, 3]:
+            input("Press Enter to proceed back to main menu")
+            return
+
+    # Function to close the connection
     def close(self):
         self.cursor.close()
         self.connection.close()
+
+    # Function to update the average rating for establishment and food item
+    def averating(self):
+        self.cursor.execute("UPDATE establishment SET averating = COALESCE((SELECT averating FROM (SELECT estno, AVG(rating) AS averating FROM review GROUP BY estno) sq WHERE establishment.estno = sq.estno), 0)")
+        self.cursor.execute("UPDATE food SET averating = COALESCE((SELECT averating FROM (SELECT foodno, AVG(rating) AS averating FROM review GROUP BY foodno) sq WHERE food.foodno = sq.foodno), 0)")
 
     ###############################
     # Review Management Functions #
@@ -918,7 +955,7 @@ class FoodReviewCLI:
     # Report Generation Functions #
     ###############################
 
-    # Function to view all food establishments
+    # 1. Function to view all food establishments
     def show_food_establishments(self):
         cursor = self.connection.cursor()
         cursor.execute("SELECT estno, estname FROM establishment ORDER BY estno")
@@ -931,7 +968,7 @@ class FoodReviewCLI:
             print("No establishments found.")
         print("\n")
 
-    # Function to view all food reviews for an establishment or a food item
+    # 2. Function to view all food reviews for an establishment or a food item
     def show_reviews(self):
         clear()
         print("Would you like to view the reviews of  ")
@@ -990,11 +1027,12 @@ class FoodReviewCLI:
         else:
             print("There are no food reviews that match your criteria.\n")
 
-    # 3. View all food items from an establishment
+    # 3. Function to view all food items from an establishment
     def show_food_items_from_establishment(self):
         while True:
             try:
-                estno = int(input("Enter establishment number: "))
+                self.show_food_establishments()
+                estno = int(input("Enter the establishment number to see its food items: "))
 
                 self.cursor.execute("SELECT estno FROM establishment WHERE estno = %s", (estno,))
                 if not self.cursor.fetchone():
@@ -1020,7 +1058,7 @@ class FoodReviewCLI:
                 print(f"Database error: {err}")
                 break
     
-    # 4. View all food items from an establishment that belong to a food type {meat | veg | etc.}.
+    # 4. Function to view all food items from an establishment that belong to a food type {meat | veg | etc.}.
     def show_food_items_from_establishment_and_food_type(self):
         try:
             while True:
@@ -1081,11 +1119,12 @@ class FoodReviewCLI:
         except mysql.connector.Error as err:
             print(f"Database error: {err}")
 
-    # 5. View all reviews made within a month for an establishment or a food item;
+    # 5. Function to view all reviews made within a month for an establishment or a food item;
     def show_reviews_within_month(self):
         try:
             while True:
-                estno = input("Enter establishment number (or 0 to skip): ")
+                print("You are looking to view all the reviews made within a specific month.")
+                estno = input("Enter the establishment number you want to view the rating of \n(or 0 to look to see the reviews of a specific food item): ")
                 if not estno.isdigit():
                     print("Invalid input. Please enter a valid number.")
                     continue
@@ -1100,7 +1139,7 @@ class FoodReviewCLI:
             foodno = 0
             if estno == 0:
                 while True:
-                    foodno = input("Enter food item number: ")
+                    foodno = input("Enter the food item number: ")
                     if not foodno.isdigit():
                         print("Invalid input. Please enter a valid number.")
                         continue
@@ -1112,7 +1151,7 @@ class FoodReviewCLI:
                     break
 
             while True:
-                month = input("Enter month (1-12): ")
+                month = input("Enter the month number (1-12) to view reviews: ")
                 if not month.isdigit() or not (1 <= int(month) <= 12):
                     print("Invalid input. Please enter a valid month between 1 and 12.")
                     continue
@@ -1144,7 +1183,7 @@ class FoodReviewCLI:
         except mysql.connector.Error as err:
             print(f"Database error: {err}")
 
-    # 6. View all establishments with a high average rating (rating >= 4). (ratings from 1-5; highest is 5);
+    # 6. Function to view all establishments with a high average rating (rating >= 4). (ratings from 1-5; highest is 5);
     def show_establishments_with_high_average_rating(self):
         try:
             sql = "SELECT * FROM establishment WHERE averating >= 4"
@@ -1154,6 +1193,7 @@ class FoodReviewCLI:
             if not establishments:
                 print("No establishments found with an average rating of 4 or higher.")
             else:
+                print("Here are all the establishments with an average rating of 4 or higher.")
                 headers = ["Est No", "Est Name", "Avg Rating"]
                 table = []
                 for est in establishments:
@@ -1163,23 +1203,29 @@ class FoodReviewCLI:
         except mysql.connector.Error as err:
             print(f"Database error: {err}")
     
-    # 7. View all food items from an establishment arranged according to price;
+    # 7. Function to view all food items from an establishment arranged according to price;
     def view_food_from_est_by_price(self):
         self.show_food_establishments()
         est_number = (input("From what establishment would you like to browse by price: "))
 
         if not est_number.isdigit():
-            input("Invalid choice. Press enter to return.")
-            self.report_management_menu()
+            print("Invalid establishment number.")
+            return
         else:
             est_number = int(est_number)
 
         cursor = self.connection.cursor()
-        cursor.execute("SELECT count(estno) FROM establishment")
-        est_count = cursor.fetchone()
-        if est_number < 0 or est_number > est_count[0]:
-            input("Invalid establishment number. Press enter to return.")
-            self.report_management_menu()        
+        cursor.execute("SELECT estno FROM establishment")
+        est = cursor.fetchall()
+        valid = False
+        for unit in est:
+            if est_number == unit[0]:
+                valid = True
+                break
+
+        if not valid:
+            print("Invalid establishment number.")
+            return
 
         cursor.execute("SELECT * FROM food WHERE estno = %s ORDER BY price", (est_number,))
         food_items = cursor.fetchall()
@@ -1196,27 +1242,34 @@ class FoodReviewCLI:
             print(tabulate(table, headers=headers, tablefmt="grid"))
             print("\n")
         else:
-            input("There are no food items in this establishment..")
-            self.report_management_menu()
+            print("There are no food items in this establishment..")
+            return
 
-    # Function to search for food based on criteria
+    # 8. Function to search for food based on criteria
     def view_food_based_on_criteria(self):
         self.show_food_establishments()
         est_number = (input("From what establishment would you like to browse by price: "))
 
         # Validate establishment number
         if not est_number.isdigit():
-            input("Invalid choice. Press enter to return.")
+            print("Invalid choice.")
             self.report_management_menu()
         else:
             est_number = int(est_number)
         cursor = self.connection.cursor()
-        cursor.execute("SELECT count(estno) FROM establishment")
-        count_est = cursor.fetchone()
-        if 0 > est_number or est_number > count_est[0]:
-            input("Invalid choice. Press enter to return.")
-            self.report_management_menu()
+        cursor.execute("SELECT estno FROM establishment")
+        est = cursor.fetchall()
+        valid = False
+        for unit in est:
+            if est_number == unit[0]:
+                valid = True
+                break
+
+        if not valid:
+            print("Invalid establishment number.")
+            return
         
+        # Prompt Criteria
         print("Would you like to browse by ")
         print ("[1] Price range")
         print ("[2] Food Type")
@@ -1225,22 +1278,22 @@ class FoodReviewCLI:
         
         # Validate sort choice
         if not sort_choice.isdigit():
-            input("Invalid choice. Press enter to return.")
-            self.report_management_menu()
+            print("Invalid choice.")
+            return
         else:
             sort_choice = int(sort_choice)
 
         # Search for food items based on criteria
         if sort_choice not in [1, 2, 3]:
-            input("Invalid choice. Press enter to return.")
-            self.report_management_menu()
+            print("Invalid choice.")
+            return
         else:
             if sort_choice == 1:
                 min_range = (input("What is the lower limit of the price range: "))
                 max_range = (input("What is the upper limit of the price range: "))
                 if not min_range.isdigit() or not max_range.isdigit():
-                    input("Invalid choice. Press enter to return.")
-                    self.report_management_menu()
+                    print("Invalid choice.")
+                    return
                 else:
                     min_range = int(min_range)
                     max_range = int(max_range)
@@ -1258,13 +1311,13 @@ class FoodReviewCLI:
 
                 # Validate food type choice
                 if not type_choice.isdigit():
-                    input("Invalid choice. Press enter to return.")
-                    self.report_management_menu()
+                    print("Invalid choice.")
+                    return
                 else:
                     type_choice = int(type_choice)-1
                     if type_choice > len(food_types)-1 or type_choice < 0:
-                        input("Invalid choice. Press enter to return.")
-                        self.report_management_menu()
+                        print("Invalid choice.")
+                        return
                     else:
                         cursor.execute("SELECT * FROM food WHERE foodtype = %s and estno = %s;", (food_types[type_choice][0], est_number))
                         food_items = cursor.fetchall()
@@ -1274,8 +1327,8 @@ class FoodReviewCLI:
             
                 # Validate price range
                 if not min_range.isdigit() or not max_range.isdigit():
-                    input("Invalid choice. Press enter to return.")
-                    self.report_management_menu()
+                    print("Invalid choice.")
+                    return
                 else:
                     min_range = int(min_range)
                     max_range = int(max_range)
@@ -1289,13 +1342,13 @@ class FoodReviewCLI:
                 type_choice = (input("Enter index of choice: "))
 
                 if not type_choice.isdigit():
-                    input("Invalid choice. Press enter to return.")
-                    self.report_management_menu()
+                    print("Invalid choice.")
+                    return
                 else:
                     type_choice = int(type_choice)-1
                     if type_choice > len(food_types)-1 or type_choice < 0:
-                        input("Invalid choice. Press enter to return.")
-                        self.report_management_menu()
+                        print("Invalid choice.")
+                        return
                     else:
                         cursor.execute("SELECT * FROM food WHERE price BETWEEN %s AND %s AND foodtype = %s and estno = %s;", (min_range, max_range, food_types[type_choice][0], est_number))
                         food_items = cursor.fetchall()
@@ -1316,36 +1369,10 @@ class FoodReviewCLI:
         else:
             print("There is no food item that matches your criteria.")
 
-    def user_management_menu(self):
-        clear()
-        print("\n" + "="*40)
-        print("          User Generation Menu          ")
-        print("="*40)
-        print("[1] View all Users")
-        print("[2] Update password")
-        print("[3] Delete user")
-        print("[0] Return to main menu")
-        print("="*40)
-        report_choice = input(">> Enter choice: ")
-        print("="*40)
 
-        if report_choice == '0':
-            print("Returning to main menu")
-            return
-        elif report_choice == '1':
-            clear()
-            self.show_users()
-        elif report_choice == '2':
-            self.update_password()
-        elif report_choice == '3':
-            self.delete_user()
-        else:
-            input("Invalid choice. Press Enter to proceed")
-            self.report_management_menu()
-
-        if int(report_choice) in [0, 1, 2, 3]:
-            input("Press Enter to proceed back to main menu")
-            return
+    #############################
+    # User Management Funcitons #
+    #############################
 
     # Function to show all users
     def show_users(self):
@@ -1379,23 +1406,25 @@ class FoodReviewCLI:
 
         return validated
 
-    # Function to update a password of an existing user
+    # Function to update the password of the current user
     def update_password(self):
         global current_userno
-        print('You are going to update the password of a user.')
-        password = input("Enter current password: ")
+        print('You are going to update your password.')
+        password = input("Enter your current password: ")
 
         validated = self.validate_user(current_userno, password)
 
         if validated == False:
-            input("Invalid password. Press Enter to return.")
+            print("Invalid password.")
             return
         else:
-            new_password = input("Enter new password: ")
+            new_password = input("Enter your new password: ")
             cursor = self.connection.cursor()
             cursor.execute("UPDATE user SET password = %s WHERE userno = %s", (new_password, current_userno))
+            self.connection.commit()
             print("User password successfully changed.")
 
+    # Function to delete account
     def delete_user(self):
         global current_userno
         print('You are going to delete a user. Enter the proper credentials to delete your account.')
@@ -1404,7 +1433,7 @@ class FoodReviewCLI:
         validated = self.validate_user(current_userno, password)
 
         if validated == False:
-            input("Invalid password. Press Enter to return.")
+            print("Invalid password.")
             return
         else:
             cursor = self.connection.cursor()
