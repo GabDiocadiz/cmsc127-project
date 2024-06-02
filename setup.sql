@@ -28,7 +28,7 @@ CREATE TABLE `food` (
   `foodtype` VARCHAR(10) NOT NULL,
   `estno` INT(5) NOT null,
   constraint food_name_uk unique(foodname),
-  constraint food_estno_fk foreign key(estno) references establishment(estno),
+  constraint food_estno_fk foreign key(estno) references establishment(estno) ON DELETE CASCADE,
   PRIMARY KEY (`foodno`)
 );
 
@@ -41,9 +41,9 @@ CREATE TABLE `review` (
   `foodno` INT(5),
   `estno` INT(5) NOT NULL,
   `userno` INT(5) NOT NULL,
-  constraint review_estno_fk foreign key(estno) references establishment(estno),
-  constraint review_foodno_fk foreign key(foodno) references food(foodno),
-  constraint review_userno_fk foreign key(userno) references user(userno),
+  constraint review_estno_fk foreign key(estno) references establishment(estno) ON DELETE CASCADE,
+  constraint review_foodno_fk foreign key(foodno) references food(foodno) ON DELETE CASCADE,
+  constraint review_userno_fk foreign key(userno) references user(userno) ON DELETE CASCADE,
   PRIMARY KEY (`reviewno`)
 );
 
@@ -90,3 +90,7 @@ INSERT INTO `review` (`text`, `rating`, `date`, `foodno`, `estno`, `userno`) VAL
 	('XXX', 2, str_to_date('17-NOV-2023','%d-%M-%Y'), 5, 5, 1),
 	('Nope', 1, str_to_date('17-NOV-2023','%d-%M-%Y'), 10, 5, 1),
 	('it is what it is', 3, str_to_date('17-MAR-2023','%d-%M-%Y'), 1, 1, 2);
+
+CREATE OR REPLACE USER 'foodproject'@'%' IDENTIFIED BY 'cmsc127';
+GRANT ALL PRIVILEGES ON foodproject.* TO 'foodproject'@'%';
+FLUSH PRIVILEGES;
