@@ -30,6 +30,9 @@ class FoodReviewCLI:
         self.authenticated = False
 
     def authentication_menu(self):
+        global current_userno
+        current_userno = None
+        self.authenticated = False
         while not self.authenticated:
             clear()
             width = 40
@@ -57,6 +60,7 @@ class FoodReviewCLI:
                 input("Press Enter to proceed")
 
     def main_menu(self):
+        global current_userno
         while True:
             clear()
             print("\n" + "="*40)
@@ -67,6 +71,7 @@ class FoodReviewCLI:
             print("[3] Food Item Management")
             print("[4] Report Generation")
             print("[5] User Management")
+            print("[6] Change user")
             print("[0] Exit")
             print("="*40)
             choice = input(">> Enter your choice: ")
@@ -82,6 +87,9 @@ class FoodReviewCLI:
                 self.report_management_menu()
             elif choice == '5':
                 self.user_management_menu()
+                if current_userno == None: self.authentication_menu()
+            elif choice == '6':
+                self.authentication_menu()
             elif choice == '0':
                 print("Exiting Food Review CLI.")
                 exit()
@@ -198,6 +206,7 @@ class FoodReviewCLI:
                 return
             else:
                 input("Invalid choice. Press Enter to try again.")
+            self.averating()
 
     # Function for the food establishment management
     def establishment_management_menu(self):
@@ -1306,7 +1315,7 @@ class FoodReviewCLI:
 
         if int(report_choice) in [0, 1, 2, 3]:
             input("Press Enter to proceed back to main menu")
-            self.main_menu()
+            return
 
     # Function to show all users
     def show_users(self):
@@ -1326,50 +1335,53 @@ class FoodReviewCLI:
         print("\n")
 
     # User validation
-    def validate_user(self, username, password):
+    def validate_user(self, current_userno, password):
         cursor = self.connection.cursor()
         cursor.execute("SELECT * FROM user")
         users = cursor.fetchall()
 
         validated = False
         for unit in users:
-            if username == unit[1]:
+            if current_userno == unit[0]:
                 if password == unit[2]:
                     validated = True
+                    break
 
         return validated
 
     # Function to update a password of an existing user
     def update_password(self):
+        global current_userno
         print('You are going to update the password of a user.')
-        username = input("Enter username: ")
         password = input("Enter current password: ")
 
-        validated = self.validate_user(username, password)
+        validated = self.validate_user(current_userno, password)
 
         if validated == False:
-            input("Invalid username or password. Press Enter to return.")
-            self.user_management_menu()
+            input("Invalid password. Press Enter to return.")
+            return
         else:
             new_password = input("Enter new password: ")
             cursor = self.connection.cursor()
-            cursor.execute("UPDATE user SET password = %s WHERE username = %s", (new_password, username))
+            cursor.execute("UPDATE user SET password = %s WHERE userno = %s", (new_password, current_userno))
             print("User password successfully changed.")
 
     def delete_user(self):
+        global current_userno
         print('You are going to delete a user. Enter the proper credentials to delete your account.')
-        username = input("Enter username: ")
         password = input("Enter current password: ")
 
-        validated = self.validate_user(username, password)
+        validated = self.validate_user(current_userno, password)
 
         if validated == False:
-            input("Invalid username or password. Press Enter to return.")
-            self.user_management_menu()
+            input("Invalid password. Press Enter to return.")
+            return
         else:
             cursor = self.connection.cursor()
-            cursor.execute("DELETE from user WHERE username = %s", (username,))
+            cursor.execute("DELETE from user WHERE userno = %s", (current_userno,))
+            self.connection.commit()
             print("User successfully Deleted.")
+            current_userno = None
 
 ################################
 
