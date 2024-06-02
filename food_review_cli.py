@@ -317,7 +317,7 @@ class FoodReviewCLI:
                 self.delete_food_item(foodname)
             elif choice == '4':
                 self.search_food_items()
-            elif choice == '5':
+            elif choice == '0':
                 return
             else:
                 print("Invalid choice. Please try again.")
@@ -414,16 +414,18 @@ class FoodReviewCLI:
         self.cursor.close()
         self.connection.close()
 
+    ###############################
+    # Review Management Functions #
+    ###############################
+
     # Function to update the average rating for establishment and food item
     def averating(self):
         self.cursor.execute("UPDATE establishment SET averating = COALESCE((SELECT averating FROM (SELECT estno, AVG(rating) AS averating FROM review GROUP BY estno) sq WHERE establishment.estno = sq.estno), 0)")
         self.cursor.execute("UPDATE food SET averating = COALESCE((SELECT averating FROM (SELECT foodno, AVG(rating) AS averating FROM review GROUP BY foodno) sq WHERE food.foodno = sq.foodno), 0)")
 
-    ###############################
-    # Review Management Functions #
-    ###############################
-
+    # Function to search fo a review
     def search_reviews(self):
+        clear()
         print("\nSearch Reviews:")
         print("1. Search by Text")
         print("2. Search by Rating")
@@ -499,6 +501,7 @@ class FoodReviewCLI:
         except Exception as e:
             print(f"An error occurred during search: {e}")
 
+    # Function to display results from the search review
     def display_review_results(self, results):
         if results:
             # Prepare review data as a list of dictionaries
@@ -509,16 +512,16 @@ class FoodReviewCLI:
                     "Rating": review[2],
                     "Date": review[3],
                 }
-                # Check for food name directly in review data (assuming a column 'foodname' exists)
+                # Check for food name directly in review data
                 if review[4] is not None:
-                    review_dict["Food"] = review[4]  # Use the food name directly
+                    review_dict["Food"] = review[4] 
                 else:
                     review_dict["Food"] = "Not specified"
                 # Add establishment information
                 review_dict["Establishment"] = self.get_establishment_name(review[5])
                 formatted_data.append(review_dict)
 
-            # Create table headers as a dictionary (adjust as needed)
+            # Create table headers as a dictionary
             table_headers = {
                 "Review Text": "Review Text",
                 "Rating": "Rating",
@@ -527,43 +530,41 @@ class FoodReviewCLI:
                 "Establishment": "Establishment",
             }
 
-            # Use tabulate to format the data as a table string
             return tabulate(formatted_data, headers=table_headers, tablefmt="grid")
         else:
-            return ""  # Indicate no reviews found (empty string)
+            return ""  # Indicate no reviews found
  
+    # Function to display results from the search review
     def get_food_name(self, foodno):
         if foodno is not None:
             try:
-                # Assuming a connection to the database is established elsewhere (e.g., in the class constructor)
                 self.cursor.execute("SELECT foodname FROM food WHERE foodno = %s", (foodno,))
                 result = self.cursor.fetchone()
                 if result:
-                    return result[0]  # Return the food name from the first element of the fetched row
+                    return result[0]
                 else:
-                    return None  # Food not found
+                    return None
 
             except Exception as e:
                 print(f"An error occurred while retrieving food name: {e}")
-                return None  # Handle potential database errors gracefully
-
-        else:
-            return None  # No foodno provided, return None
+                return None  
         
+        else:
+            return None
+
+    # Function to display results from the search review
     def get_establishment_name(self, estno):
         try:
-            # Assuming a connection to the database is established elsewhere (e.g., in the class constructor)
             self.cursor.execute("SELECT estname FROM establishment WHERE estno = %s", (estno,))
             result = self.cursor.fetchone()
             if result:
-                return result[0]  # Return the establishment name from the first element of the fetched row
+                return result[0]
             else:
-                raise ValueError("Establishment not found")  # Raise a specific exception if not found
+                raise ValueError("Establishment not found") 
 
         except Exception as e:
             print(f"An error occurred while retrieving establishment name: {e}")
-            # Consider handling different exception types more specifically
-            return None  # Or return a different value to indicate an error
+            return None
 
     def add_review(self):
         global current_userno
