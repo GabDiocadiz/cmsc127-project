@@ -51,7 +51,6 @@ class FoodReviewCLI:
                 self.food_item_management_menu()
             elif choice == '4':
                 self.report_management_menu()
-                user_management_menu
             elif choice == '5':
                 self.user_management_menu()
             elif choice == '6':
@@ -1011,6 +1010,6 @@ class FoodReviewCLI:
 ################################
 
 # Main Menu System
-cli = FoodReviewCLI("localhost", "root", "killjoy", "foodproject")
+cli = FoodReviewCLI("localhost", "foodproject", "cmsc127", "foodproject")
 cli.averating()
 cli.main_menu()
