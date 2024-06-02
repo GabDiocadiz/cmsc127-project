@@ -89,23 +89,45 @@ class FoodReviewCLI:
 
     # Sign-Up Method
     def sign_up(self):
-        print('Sign Up:')
-        username = input("Enter username: ")
-        password = input("Enter password: ")
-        try:
-            cursor = self.connection.cursor()
-            cursor.execute("INSERT INTO `user` (`username`, `password`) VALUES (%s, %s)", (username, password))
-            self.connection.commit()
-            print("User successfully created.")
-        except mysql.connector.Error as err:
-            print(f"Error creating user: {err}")
+        while True:
+            clear()
+            width = 40
+            print("\n" + "="*width)
+            print("Sign Up".center(width))
+            print("="*width)
+            print("[0] Back to previous menu")
+            username = input("Enter username: ")
+            if username == '0':
+                return  # Exit the sign-up process and return to the previous menu
+            password = input("Enter password: ")
+            print("="*width)
+            
+            try:
+                cursor = self.connection.cursor()
+                cursor.execute("INSERT INTO `user` (`username`, `password`) VALUES (%s, %s)", (username, password))
+                self.connection.commit()
+                print("User successfully created.")
+                input("Press Enter to proceed")
+                return
+            except mysql.connector.Error as err:
+                print(f"Error creating user: {err}")
+                input("Press Enter to try again")
 
     # Sign-In Method
     def sign_in(self):
         while True:
-            print('Sign In:')
+            clear()
+            width = 40
+            print("\n" + "="*width)
+            print("Sign In".center(width))
+            print("="*width)
+            print("[0] Back to previous menu")
             username = input("Enter username: ")
+            if username == '0':
+                return False 
             password = input("Enter password: ")
+            print("="*width)
+
             try:
                 cursor = self.connection.cursor()
                 cursor.execute("SELECT * FROM user WHERE username = %s AND password = %s", (username, password))
@@ -114,8 +136,8 @@ class FoodReviewCLI:
                     print("Sign in successful!")
                     return True
                 else:
-                    input("Invalid username or password. Please try again.\nPress Enter to proceed")
-                    return
+                    print("Invalid username or password. Please try again.")
+                    input("Press Enter to proceed")
             except mysql.connector.Error as err:
                 print(f"Error signing in: {err}")
                 return False
