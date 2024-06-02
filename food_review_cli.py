@@ -25,7 +25,7 @@ class FoodReviewCLI:
             print(f"Error connecting to database: {err}")
             exit()
 
-    # Function to update the average rating per establishment
+    # Function to update the average rating for establishment and food item
     def averating(self):
         self.cursor.execute("UPDATE establishment SET averating = COALESCE((SELECT averating FROM (SELECT estno, AVG(rating) AS averating FROM review GROUP BY estno) sq WHERE establishment.estno = sq.estno), 0)")
         self.cursor.execute("UPDATE food SET averating = COALESCE((SELECT averating FROM (SELECT foodno, AVG(rating) AS averating FROM review GROUP BY foodno) sq WHERE food.foodno = sq.foodno), 0)")
@@ -514,18 +514,63 @@ class FoodReviewCLI:
 
     # 2. View all food reviews for an establishment or a food item
     def show_reviews(self):
-        cursor = self.connection.cursor()
-        cursor.execute("SELECT * FROM review order by reviewno")
-        food_reviews = cursor.fetchall()
-        print("Here are all the food review. \n \n")
-        print(f"No  | Text Description     | Rating | Review Date | Food No | Est No | User No")
+        clear()
+        print("Would you like to view the reviews of  ")
+        print ("[1] Food establishment")
+        print ("[2] Food item")
+        choice = (input("Enter index of choice: "))
+        
+        # Validate choice
+        if not choice.isdigit():
+            input("Invalid choice. Press enter to return.")
+            self.report_management_menu()
+        else:
+            choice = int(choice)
 
-        for item in food_reviews:
-            if item[4] != None:
-                print(f"{item[0]:<3} | {item[1]:<20} | {item[2]:<6} | {item[3]}  | {item[4]:<7} | {item[5]:<6} | {item[6]:<3}")
+        if choice == 1:
+            self.show_food_establishments()
+            est_choice = (input("Enter the index of the establishment that you want to see reviews of: "))
+
+            # Validate choice
+            if not est_choice.isdigit():
+                input("Invalid choice. Press enter to return.")
+                self.report_management_menu()
             else:
-                print(f"{item[0]:<3} | {item[1]:<20} | {item[2]:<6} | {item[3]}  | None    | {item[5]:<6} | {item[6]:<3}")
-        print("\n")
+                est_choice = int(est_choice)
+
+            cursor = self.connection.cursor()
+            cursor.execute("SELECT * FROM review where estno = %s order by reviewno", (est_choice,))
+            food_reviews = cursor.fetchall()
+        elif choice == 2:
+            self.show_food_items_from_establishment()
+            food_choice = (input("Enter the index of the food item that that you want to see reviews of : "))
+
+            # Validate choice
+            if not food_choice.isdigit():
+                input("Invalid choice. Press enter to return.")
+                self.report_management_menu()
+            else:
+                food_choice = int(food_choice)
+
+            cursor = self.connection.cursor()
+            cursor.execute("SELECT * FROM review where foodno = %s order by reviewno", (food_choice,))
+            food_reviews = cursor.fetchall()
+        else:
+            input("Invalid choice. Press enter to return.")
+            self.report_management_menu()
+
+        if food_reviews != []:
+            print("Here are all the food review. \n \n")
+            print(f"No  | Text Description     | Rating | Review Date | Food No | Est No | User No")
+            for item in food_reviews:
+                if item[4] != None:
+                    print(f"{item[0]:<3} | {item[1]:<20} | {item[2]:<6} | {item[3]}  | {item[4]:<7} | {item[5]:<6} | {item[6]:<3}")
+                else:
+                    print(f"{item[0]:<3} | {item[1]:<20} | {item[2]:<6} | {item[3]}  | None    | {item[5]:<6} | {item[6]:<3}")
+            print("\n")
+        else:
+            print("There are food reviews that match your criteria \n")
+
 
     # 3. View all food items from an establishment
     def show_food_items_from_establishment(self):
@@ -845,5 +890,6 @@ class FoodReviewCLI:
 ################################
 
 # Main Menu System
-cli = FoodReviewCLI("localhost", "root", "gddiocadiz", "foodproject")
+cli = FoodReviewCLI("localhost", "root", "killjoy", "foodproject")
+cli.averating()
 cli.main_menu()
