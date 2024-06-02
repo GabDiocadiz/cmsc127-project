@@ -186,7 +186,7 @@ class FoodReviewCLI:
             elif choice == '3':
                 self.delete_review()
             elif choice == '0':
-                pass  # Back to main menu
+                return  # Back to main menu
             else:
                 input("Invalid choice. Press Enter to try again.")
 
