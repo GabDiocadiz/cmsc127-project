@@ -112,6 +112,8 @@ class FoodReviewCLI:
         choice = input(">> Enter your choice: ")
         print("="*40)
 
+        review_type = input("Enter review type (establishment/food) or 'b' to go back: ")
+
         if review_type.lower() == "b":
             return  # Exit function if user chooses 'b'
 
