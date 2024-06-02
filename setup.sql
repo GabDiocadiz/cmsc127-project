@@ -90,3 +90,7 @@ INSERT INTO `review` (`text`, `rating`, `date`, `foodno`, `estno`, `userno`) VAL
 	('XXX', 2, str_to_date('17-NOV-2023','%d-%M-%Y'), 5, 5, 1),
 	('Nope', 1, str_to_date('17-NOV-2023','%d-%M-%Y'), 10, 5, 1),
 	('it is what it is', 3, str_to_date('17-MAR-2023','%d-%M-%Y'), 1, 1, 2);
+
+CREATE OR REPLACE USER 'foodproject'@'%' IDENTIFIED BY 'cmsc127';
+GRANT ALL PRIVILEGES ON foodproject.* TO 'foodproject'@'%';
+FLUSH PRIVILEGES;
