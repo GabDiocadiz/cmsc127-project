@@ -962,12 +962,8 @@ class FoodReviewCLI:
         cursor.execute("INSERT INTO `user` (`username`, `password`) VALUES (%s, %s)", (username, password))
         print("User successfully created.")
 
-    # Function to update a password of an existing user
-    def update_password(self):
-        print('You are going to update the password of a user.')
-        username = input("Enter username: ")
-        password = input("Enter current password: ")
-
+    # User validation
+    def validate_user(self, username, password):
         cursor = self.connection.cursor()
         cursor.execute("SELECT * FROM user")
         users = cursor.fetchall()
@@ -977,12 +973,23 @@ class FoodReviewCLI:
             if username == unit[1]:
                 if password == unit[2]:
                     validated = True
-                    new_password = input("Enter new password: ")
+
+        return validated
+
+    # Function to update a password of an existing user
+    def update_password(self):
+        print('You are going to update the password of a user.')
+        username = input("Enter username: ")
+        password = input("Enter current password: ")
+
+        validated = self.validate_user(username, password)
 
         if validated == False:
             input("Invalid username or password. Press Enter to return.")
             self.user_management_menu()
         else:
+            new_password = input("Enter new password: ")
+            cursor = self.connection.cursor()
             cursor.execute("UPDATE user SET password = %s WHERE username = %s", (new_password, username))
             print("User password successfully changed.")
 
@@ -991,23 +998,14 @@ class FoodReviewCLI:
         username = input("Enter username: ")
         password = input("Enter current password: ")
 
-        cursor = self.connection.cursor()
-        cursor.execute("SELECT * FROM user")
-        users = cursor.fetchall()
-
-        validated = False
-        userno = None
-        for unit in users:
-            if username == unit[1]:
-                if password == unit[2]:
-                    validated = True
-                    userno = unit[0]
+        validated = self.validate_user(username, password)
 
         if validated == False:
             input("Invalid username or password. Press Enter to return.")
             self.user_management_menu()
         else:
-            cursor.execute("DELETE from user WHERE userno = %s", (userno,))
+            cursor = self.connection.cursor()
+            cursor.execute("DELETE from user WHERE username = %s", (username,))
             print("User successfully Deleted.")
 
 ################################
