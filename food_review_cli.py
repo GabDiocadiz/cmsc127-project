@@ -24,6 +24,38 @@ class FoodReviewCLI:
         except mysql.connector.Error as err:
             print(f"Error connecting to database: {err}")
             exit()
+    
+    # Sign-Up Method
+    def sign_up(self):
+        print('Sign Up:')
+        username = input("Enter username: ")
+        password = input("Enter password: ")
+        try:
+            cursor = self.connection.cursor()
+            cursor.execute("INSERT INTO `user` (`username`, `password`) VALUES (%s, %s)", (username, password))
+            self.connection.commit()
+            print("User successfully created.")
+        except mysql.connector.Error as err:
+            print(f"Error creating user: {err}")
+
+    # Sign-In Method
+    def sign_in(self):
+        print('Sign In:')
+        username = input("Enter username: ")
+        password = input("Enter password: ")
+        try:
+            cursor = self.connection.cursor()
+            cursor.execute("SELECT * FROM user WHERE username = %s AND password = %s", (username, password))
+            user = cursor.fetchone()
+            if user:
+                print("Sign in successful!")
+                return True
+            else:
+                print("Invalid username or password.")
+                return False
+        except mysql.connector.Error as err:
+            print(f"Error signing in: {err}")
+            return False
 
     # Function to update the average rating for establishment and food item
     def averating(self):
