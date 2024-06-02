@@ -740,22 +740,43 @@ class FoodReviewCLI:
     def view_food_from_est_by_price(self):
         self.show_food_establishments()
         est_number = (input("From what establishment would you like to browse by price: "))
+
         if not est_number.isdigit():
             input("Invalid choice. Press enter to return.")
             self.report_management_menu()
         else:
             est_number = int(est_number)
+
         cursor = self.connection.cursor()
+        cursor.execute("SELECT count(estno) FROM establishment")
+        est_count = cursor.fetchone()
+        if est_number < 0 or est_number > est_count[0]:
+            input("Invalid establishment number. Press enter to return.")
+            self.report_management_menu()        
+
         cursor.execute("SELECT * FROM food WHERE estno = %s ORDER BY price", (est_number,))
         food_items = cursor.fetchall()
         if food_items != []:
+            max_food_name_length = max(len(item[1]) for item in food_items)
+            max_food_type_length = max(len(item[4]) for item in food_items)
+            
+            max_food_name_length = max(max_food_name_length, len("Food Name"))
+            max_food_type_length = max(max_food_type_length, len("Food Type"))
+            
+            food_name_header = "Food Name".ljust(max_food_name_length)
+            food_type_header = "Food Type".ljust(max_food_type_length)
+            
             print(f"Here are all the food items from establishment #{est_number}.\n")
-            print(f"No  | Food Name    | Rating | Price  | Food Type | Est No ")
+            print(f"| No  | {food_name_header} | Rating | Price  | {food_type_header} | Est No |")
+            print(f"|-----|{'-' * (max_food_name_length + 2)}|--------|--------|{'-' * (max_food_type_length + 2)}|--------|")
+
             for item in food_items:
-                print(f"{item[0]:<3} | {item[1]:<12} | {item[2]:<6} | {item[3]:<5}  | {item[4]:<9} | {item[5]:<6}")
+                food_name = item[1].ljust(max_food_name_length)
+                food_type = item[4].ljust(max_food_type_length)
+                print(f"| {item[0]:<3} | {food_name} | {item[2]:<6} | {item[3]:<6} | {food_type} | {item[5]:<6} |")
             print("\n")
         else:
-            input("Invalid establishment number. Press enter to return.")
+            input("There are no food items in this establishment..")
             self.report_management_menu()
 
     # Function to search for food based on criteria
@@ -811,7 +832,7 @@ class FoodReviewCLI:
                 food_types = cursor.fetchall()
                 index = 1
                 for item in food_types:
-                    print(f"[{index:<3}] | {item[0]:<10}")
+                    print(f"[{index:<2}] | {item[0]:<10}")
                     index += 1
                 type_choice = (input("Enter index of choice: "))
 
