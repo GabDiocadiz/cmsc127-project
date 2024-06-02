@@ -506,7 +506,11 @@ class FoodReviewCLI:
                 print("Invalid input. Please enter a number.")
         text = input("Enter review text: ")
         date = input("Enter date (DD-MM-YYYY): ")
-        foodno = input("\nAre you reviewing a food item? \nEnter the food no if yes, 0 if no: ")
+        try:
+            foodno = input("\nAre you reviewing a food item? \nEnter the food no if yes, 0 if no: ")
+        except ValueError:
+            input("Invalid input. Press enter to return")
+            return
         try:
             estno = int(input("Enter establishment number: "))
             userno = int(input("Enter user number: "))
@@ -523,6 +527,7 @@ class FoodReviewCLI:
             est_exists = cursor.fetchone()
             cursor.execute(check_user_query, (userno,))
             user_exists = cursor.fetchone()
+            # Check if the food belongs to the establishment from the review
             if foodno != '0':
                 check_food_query = "SELECT foodno FROM food WHERE foodno = %s and estno =%s"
                 cursor.execute(check_food_query, (foodno, estno))
@@ -545,7 +550,6 @@ class FoodReviewCLI:
                 self.cursor.execute(sql, (text, rating, date, None, estno, userno))
                 self.connection.commit()
             print("Review added successfully!")
-
         except ValueError as e:
             print(f"Error adding review: {e}")
         except mysql.connector.Error as err:
@@ -561,11 +565,12 @@ class FoodReviewCLI:
             input("Invalid input. Press enter to return")
             return
 
-        # Prompt user for specific update (text, rating, estno, foodno)
+        # Prompt user for specific update (text, rating, estno, foodno) then validate
         print("What would you like to update?")
         print("[1] Text")
         print("[2] Rating")
         print("[3] Food Number")
+        print("[4] Establishment Number")
         print("[0] Exit")
         update_choice = input("Enter index of choice: ")
         if update_choice == '0':
@@ -585,13 +590,32 @@ class FoodReviewCLI:
         elif update_choice == '3':
             try:
                 new_food_no = int(input("Enter new food number: "))
-                self.cursor.execute("SELECT estno FROM review WHERE reviewno = %s", (reviewno,))
-                review_estno = self.cursor.fetchone()
-                self.cursor.execute("SELECT estno FROM food WHERE foodno = %s", (new_food_no,))
-                food_estno = self.cursor.fetchone()
-                if review_estno != food_estno:
-                    input("Invalid food number. Press Enter to return.")
+                if new_food_no != 0:
+                    self.cursor.execute("SELECT estno FROM review WHERE reviewno = %s", (reviewno,))
+                    review_estno = self.cursor.fetchone()
+                    self.cursor.execute("SELECT estno FROM food WHERE foodno = %s", (new_food_no,))
+                    food_estno = self.cursor.fetchone()
+                    if review_estno != food_estno:
+                        input("Invalid food number. Press Enter to return.")
+                        return
+            except ValueError:
+                input("Invalid input. Press enter to return")
+                return
+        elif update_choice == '4':
+            try:
+                new_est_no = int(input("Enter new establishment number: "))
+                self.cursor.execute("SELECT estno FROM review WHERE reviewno = %s", (new_est_no,))
+                valid_new_estno = self.cursor.fetchone()
+                if not valid_new_estno:
+                    input("Invalid establishment number. Press Enter to return.")
                     return
+                new_food_no = int(input("Are you reviewing a food item? \nEnter the food no if yes, 0 if no: "))
+                if new_food_no != 0:
+                    self.cursor.execute("SELECT estno FROM food WHERE foodno = %s", (new_food_no,))
+                    food_estno = self.cursor.fetchone()
+                    if new_est_no != food_estno:
+                        input("Invalid food number. Press Enter to return.")
+                        return
             except ValueError:
                 input("Invalid input. Press enter to return")
                 return
@@ -606,7 +630,12 @@ class FoodReviewCLI:
                 self.cursor.execute("UPDATE review SET rating = %s WHERE reviewno = %s", (new_rating, reviewno))
                 self.connection.commit()
             elif update_choice == "3":
+                if new_food_no == '0': new_food_no = None
                 self.cursor.execute("UPDATE review SET foodno = %s WHERE reviewno = %s", (new_food_no, reviewno))
+                self.connection.commit()
+            elif update_choice == "4":
+                if new_food_no == '0': new_food_no = None
+                self.cursor.execute("UPDATE review SET estno = %s, foodno = %s WHERE reviewno = %s", (new_est_no, new_food_no, reviewno))
                 self.connection.commit()
             print("Review updated successfully!")
         except mysql.connector.Error as err:
