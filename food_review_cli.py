@@ -460,7 +460,7 @@ class FoodReviewCLI:
             return
         else:
             print("Invalid choice. Please try again.")
-            self.search_reviews()  # Recursively call for valid input
+            return  # Recursively call for valid input
 
         try:
             self.cursor.execute(sql, values) # Execute sql and values
@@ -497,6 +497,8 @@ class FoodReviewCLI:
                     review_dict["Food"] = "Not specified"
                 # Add establishment information
                 review_dict["Establishment"] = self.get_establishment_name(review[5])
+                # Add food information
+                review_dict["Food name"] = self.get_food_name(review[4])
                 formatted_data.append(review_dict)
 
             # Create table headers as a dictionary
@@ -544,6 +546,7 @@ class FoodReviewCLI:
             print(f"An error occurred while retrieving establishment name: {e}")
             return None
 
+    #Function to add a review
     def add_review(self):
         global current_userno
         # Get user input for review details (text, rating, date, estno) then validate
@@ -699,6 +702,7 @@ class FoodReviewCLI:
             print(f"Error updating review: {err}")
             return
 
+    # Function to delete a review
     def delete_review(self):
         try:
             reviewno = int(input("Enter review ID to delete: "))
@@ -806,6 +810,7 @@ class FoodReviewCLI:
     # Food Item Management Functions #
     ##################################
 
+    # Function to add a food item
     def add_food_item(self, foodname, price, foodtype, estno):
         try:
             sql = "INSERT INTO food (foodname, price, foodtype, estno) VALUES (%s, %s, %s, %s)"
@@ -814,34 +819,6 @@ class FoodReviewCLI:
             print("Food item added successfully!")
         except mysql.connector.Error as err:
             print(f"Error adding food item: {err}")
-
-
-    # Function to search for a food item
-    def search_food_item(self, search_term):
-        try:
-            # Search for food items by name (case-insensitive)
-            search_query = """SELECT food.foodno, food.foodname, est.estname
-                            FROM food
-                            INNER JOIN establishment est ON food.estno = est.estno
-                            WHERE food.foodname LIKE %s"""
-            cursor = self.connection.cursor()
-            cursor.execute(search_query, ("%" + search_term + "%",))
-            results = cursor.fetchall()
-
-            if not results:
-                print(f"No food items found matching '{search_term}'.")
-            else:
-                # Display search results in a table
-                headers = ["ID", "Name", "Establishment"]
-                table = []
-                for row in results:
-                    foodno, foodname, estname = row
-                    table.append([foodno, foodname, estname])
-                
-                print(tabulate(table, headers=headers, tablefmt="grid"))
-
-        except mysql.connector.Error as err:
-            print(f"Error searching food items: {err}")
 
     # Function to delete a food item
     def delete_food_item(self, foodname):
@@ -885,7 +862,6 @@ class FoodReviewCLI:
         try:
             cursor = self.connection.cursor()
 
-            # Prepare SQL query using wildcards for partial matches
             sql = f"""
                 SELECT f.foodno, f.foodname, f.averating, f.price, f.foodtype, e.estname
                 FROM food f
@@ -905,13 +881,11 @@ class FoodReviewCLI:
                         "Food ID": food_item[0],
                         "Food Name": food_item[1],
                         "Average Rating": food_item[2],
-                        "Price": f"{food_item[3]:.2f}",  # Format price with two decimal places
+                        "Price": f"{food_item[3]:.2f}", 
                         "Food Type": food_item[4],
                         "Establishment": food_item[5],
                     })
 
-                # Print food_data for verification (optional)
-                # print(food_data)
                 table_headers = {
                                     "Food ID": "Food ID",
                                     "Food Name": "Food Name",
