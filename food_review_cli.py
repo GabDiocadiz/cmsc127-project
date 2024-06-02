@@ -197,6 +197,7 @@ class FoodReviewCLI:
             print("[1] Add Review")
             print("[2] Update Review")
             print("[3] Delete Review")
+            print("[4] Search Review")
             print("[0] Back to Main Menu")
             print("="*40)
             choice = input(">> Enter your choice: ")
