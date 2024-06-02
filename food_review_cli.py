@@ -30,15 +30,17 @@ class FoodReviewCLI:
     def authentication_menu(self):
         while not self.authenticated:
             clear()
-            print("\n" + "="*40)
-            print("          Welcome to Food Review CLI          ")
-            print("="*40)
+            width = 40
+            welcome_text = "Welcome to Food Review CLI"
+            print("\n" + "="*width)
+            print(welcome_text.center(width))
+            print("="*width)
             print("[1] Sign Up")
             print("[2] Sign In")
             print("[0] Exit")
-            print("="*40)
+            print("="*width)
             choice = input(">> Enter your choice: ")
-            print("="*40)
+            print("="*width)
 
             if choice == '1':
                 self.sign_up()
@@ -87,36 +89,75 @@ class FoodReviewCLI:
 
     # Sign-Up Method
     def sign_up(self):
-        print('Sign Up:')
-        username = input("Enter username: ")
-        password = input("Enter password: ")
-        try:
-            cursor = self.connection.cursor()
-            cursor.execute("INSERT INTO `user` (`username`, `password`) VALUES (%s, %s)", (username, password))
-            self.connection.commit()
-            print("User successfully created.")
-            input("Press Enter to proceed")
-        except mysql.connector.Error as err:
-            print(f"Error creating user: {err}")
+        while True:
+            clear()
+            width = 40
+            print("\n" + "="*width)
+            print("Sign Up".center(width))
+            print("="*width)
+            print("[0] Back to previous menu")
+            username = input("Enter username: ")
+            if username == '0':
+                return 
+
+            # Check if username is unique
+            try:
+                cursor = self.connection.cursor()
+                cursor.execute("SELECT * FROM user WHERE username = %s", (username,))
+                if cursor.fetchone():
+                    print("Username already exists. Please choose a different username.")
+                    input("Press Enter to proceed")
+                    continue
+            except mysql.connector.Error as err:
+                print(f"Error checking username: {err}")
+                input("Press Enter to proceed")
+                continue
+
+            password = input("Enter password: ")
+            if not password:
+                print("Password cannot be blank. Please try again.")
+                input("Press Enter to proceed")
+                continue
+            print("="*width)
+            
+            try:
+                cursor.execute("INSERT INTO `user` (`username`, `password`) VALUES (%s, %s)", (username, password))
+                self.connection.commit()
+                print("User successfully created.")
+                input("Press Enter to proceed")
+                return
+            except mysql.connector.Error as err:
+                print(f"Error creating user: {err}")
+                input("Press Enter to try again")
 
     # Sign-In Method
     def sign_in(self):
-        print('Sign In:')
-        username = input("Enter username: ")
-        password = input("Enter password: ")
-        try:
-            cursor = self.connection.cursor()
-            cursor.execute("SELECT * FROM user WHERE username = %s AND password = %s", (username, password))
-            user = cursor.fetchone()
-            if user:
-                print("Sign in successful!")
-                return True
-            else:
-                print("Invalid username or password.")
+        while True:
+            clear()
+            width = 40
+            print("\n" + "="*width)
+            print("Sign In".center(width))
+            print("="*width)
+            print("[0] Back to previous menu")
+            username = input("Enter username: ")
+            if username == '0':
                 return False
-        except mysql.connector.Error as err:
-            print(f"Error signing in: {err}")
-            return False
+            password = input("Enter password: ")
+            print("="*width)
+
+            try:
+                cursor = self.connection.cursor()
+                cursor.execute("SELECT * FROM user WHERE username = %s AND password = %s", (username, password))
+                user = cursor.fetchone()
+                if user:
+                    print("Sign in successful!")
+                    return True
+                else:
+                    print("Invalid username or password. Please try again.")
+                    input("Press Enter to proceed")
+            except mysql.connector.Error as err:
+                print(f"Error signing in: {err}")
+                return False
 
     # Function to update the average rating for establishment and food item
     def averating(self):
