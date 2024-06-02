@@ -737,11 +737,13 @@ class FoodReviewCLI:
                 print(f"No establishments found matching '{search_term}'.")
             else:
                 # Display search results in a formatted table
-                print("{:<10} {:<50}".format("ID", "Name"))
-                print("-" * 60)
+                headers = ["ID", "Name"]
+                table = []
                 for row in results:
                     estno, estname, averating = row
-                    print("{:<10} {:<50}".format(estno, estname))
+                    table.append([estno, estname])
+                
+                print(tabulate(table, headers=headers, tablefmt="grid"))
 
         except mysql.connector.Error as err:
             print(f"Error searching establishments: {err}")
@@ -777,11 +779,13 @@ class FoodReviewCLI:
                 print(f"No food items found matching '{search_term}'.")
             else:
                 # Display search results in a table
-                print("{:<10} {:<50} {:<20}".format("ID", "Name", "Establishment"))
-                print("-" * 80)
+                headers = ["ID", "Name", "Establishment"]
+                table = []
                 for row in results:
                     foodno, foodname, estname = row
-                    print("{:<10} {:<50} {:<20}".format(foodno, foodname, estname))
+                    table.append([foodno, foodname, estname])
+                
+                print(tabulate(table, headers=headers, tablefmt="grid"))
 
 
         except mysql.connector.Error as err:
@@ -1021,11 +1025,14 @@ class FoodReviewCLI:
                     max_price_length = max(len(f"{item[3]:.2f}") for item in food_items)
                     price_header = "Price".ljust(max_price_length)
 
-                    print(f"| Food No | Food Name          | Rating | {price_header} | Food Type       | Est No |")
-                    print(f"|---------|--------------------|--------|{'-' * (max_price_length + 2)}|-----------------|--------|")
+                    headers = ["Food No", "Food Name", "Rating", "Price", "Food Type", "Est No"]
+                    table = []
                     for item in food_items:
-                        price = f"{item[3]:.2f}".ljust(max_price_length)
-                        print(f"| {item[0]:<7} | {item[1]:<18} | {item[2]:<6} | {price} | {item[4]:<15} | {item[5]:<6} |")
+                        price = f"{item[3]:.2f}"
+                        table.append([item[0], item[1], item[2], price, item[4], item[5]])
+                    
+                    print("Here are the food items:\n")
+                    print(tabulate(table, headers=headers, tablefmt="grid"))
                     break
         except ValueError:
             print("Invalid input. Please enter valid numbers.")
@@ -1081,16 +1088,15 @@ class FoodReviewCLI:
             if not reviews:
                 print("No reviews found for the given criteria.")
             else:
-                max_text_length = max(len(review[1]) for review in reviews)
-                header_length = len("Text Description")
-                max_length = max(max_text_length, header_length)
-                text_header = "Text Description".ljust(max_length)
-                print(f"| Review No | {text_header} | Rating | Date       | Food No | Est No | User No |")
-                print(f"|-----------|{'-' * (max_length + 2)}|--------|------------|---------|--------|---------|")
+                headers = ["Review No", "Text Description", "Rating", "Date", "Food No", "Est No", "User No"]
+                table = []
                 for review in reviews:
                     review_date = review[3].strftime('%Y-%m-%d')
-                    text = review[1].ljust(max_length)
-                    print(f"| {review[0]:<9} | {text} | {review[2]:<6} | {review_date:<10} | {review[4] or 'None':<7} | {review[5]:<6} | {review[6]:<7} |")
+                    food_no = review[4] if review[4] is not None else "None"
+                    table.append([review[0], review[1], review[2], review_date, food_no, review[5], review[6]])
+                
+                print("Here are the reviews:\n")
+                print(tabulate(table, headers=headers, tablefmt="grid"))
         except ValueError:
             print("Invalid input. Please enter valid numbers.")
         except mysql.connector.Error as err:
@@ -1106,10 +1112,12 @@ class FoodReviewCLI:
             if not establishments:
                 print("No establishments found with an average rating of 4 or higher.")
             else:
-                print("{:<10} {:<50} {:<10}".format("Est No", "Est Name", "Avg Rating"))
-                print("-" * 70)
+                headers = ["Est No", "Est Name", "Avg Rating"]
+                table = []
                 for est in establishments:
-                    print("{:<10} {:<50} {:<10}".format(est[0], est[1], est[2]))
+                    table.append([est[0], est[1], est[2]])
+                
+                print(tabulate(table, headers=headers, tablefmt="grid"))
         except mysql.connector.Error as err:
             print(f"Database error: {err}")
     
@@ -1134,23 +1142,16 @@ class FoodReviewCLI:
         cursor.execute("SELECT * FROM food WHERE estno = %s ORDER BY price", (est_number,))
         food_items = cursor.fetchall()
         if food_items != []:
-            max_food_name_length = max(len(item[1]) for item in food_items)
-            max_food_type_length = max(len(item[4]) for item in food_items)
-            
-            max_food_name_length = max(max_food_name_length, len("Food Name"))
-            max_food_type_length = max(max_food_type_length, len("Food Type"))
-            
-            food_name_header = "Food Name".ljust(max_food_name_length)
-            food_type_header = "Food Type".ljust(max_food_type_length)
+            headers = ["No", "Food Name", "Rating", "Price", "Food Type", "Est No"]
+            table = []
+            for item in food_items:
+                food_name = item[1]
+                food_type = item[4]
+                price = f"{item[3]:.2f}"
+                table.append([item[0], food_name, item[2], price, food_type, item[5]])
             
             print(f"Here are all the food items from establishment #{est_number}.\n")
-            print(f"| No  | {food_name_header} | Rating | Price  | {food_type_header} | Est No |")
-            print(f"|-----|{'-' * (max_food_name_length + 2)}|--------|--------|{'-' * (max_food_type_length + 2)}|--------|")
-
-            for item in food_items:
-                food_name = item[1].ljust(max_food_name_length)
-                food_type = item[4].ljust(max_food_type_length)
-                print(f"| {item[0]:<3} | {food_name} | {item[2]:<6} | {item[3]:<6} | {food_type} | {item[5]:<6} |")
+            print(tabulate(table, headers=headers, tablefmt="grid"))
             print("\n")
         else:
             input("There are no food items in this establishment..")
@@ -1260,22 +1261,15 @@ class FoodReviewCLI:
         if food_items:
             print("Here are the food item/s that match your criteria.")
             
-            max_food_name_length = max(len(item[1]) for item in food_items)
-            max_food_type_length = max(len(item[4]) for item in food_items)
-            
-            max_food_name_length = max(max_food_name_length, len("Food Name"))
-            max_food_type_length = max(max_food_type_length, len("Food Type"))
-            
-            food_name_header = "Food Name".ljust(max_food_name_length)
-            food_type_header = "Food Type".ljust(max_food_type_length)
-            
-            print(f"| No  | {food_name_header} | Rating | Price  | {food_type_header} | Est No |")
-            print(f"|-----|{'-' * (max_food_name_length + 2)}|--------|--------|{'-' * (max_food_type_length + 2)}|--------|")
-            
+            headers = ["No", "Food Name", "Rating", "Price", "Food Type", "Est No"]
+            table = []
             for item in food_items:
-                food_name = item[1].ljust(max_food_name_length)
-                food_type = item[4].ljust(max_food_type_length)
-                print(f"| {item[0]:<3} | {food_name} | {item[2]:<6} | {item[3]:<6} | {food_type} | {item[5]:<6} |")
+                food_name = item[1]
+                food_type = item[4]
+                price = f"{item[3]:.2f}"
+                table.append([item[0], food_name, item[2], price, food_type, item[5]])
+            
+            print(tabulate(table, headers=headers, tablefmt="grid"))
             print("\n")
         else:
             print("There is no food item that matches your criteria.")
