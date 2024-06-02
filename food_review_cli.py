@@ -430,9 +430,7 @@ class FoodReviewCLI:
         print("1. Search by Text")
         print("2. Search by Rating")
         print("3. Search by Date Range")
-        print("4. Search by Food (Optional)")
-        print("5. Search by Establishment")
-        print("6. Back to Menu")
+        print("0. Back to Menu")
 
         choice = input("Enter your choice: ")
 
@@ -454,40 +452,18 @@ class FoodReviewCLI:
                 except ValueError:
                     print("Invalid input. Please enter numbers.")
         elif choice == '3':
-            from_date = input("Enter start date (DD-Month-YYYY): ")
-            to_date = input("Enter end date (DD-Month-YYYY): ")
-            sql = "SELECT * FROM review WHERE review_date BETWEEN %s AND %s"
+            from_date = input("Enter start date (DD-MM-YYYY): ")
+            to_date = input("Enter end date (DD-MM-YYYY): ")
+            sql = "SELECT * FROM review WHERE date BETWEEN str_to_date(%s,'%d-%m-%Y') AND str_to_date(%s,'%d-%m-%Y')"
             values = (from_date, to_date)
-        elif choice == '4':
-            food_name = input("Enter food name (partial match, or leave blank to skip): ")
-            if food_name:
-                sql = """
-                        SELECT r.*, f.foodname  -- Include desired food data from 'food' table
-                        FROM review r
-                        LEFT JOIN food f ON r.foodno = f.foodno  -- Adjust column names if needed
-                        WHERE f.foodname LIKE %s
-                    """
-                values = ("%" + food_name + "%",)
-            else:
-                sql = "SELECT * FROM review"
-                values = ()
-        elif choice == '5':
-            est_name = input("Enter establishment name (partial match): ")
-            sql = """
-                    SELECT r.*, e.estname  -- Include desired establishment data from 'establishment' table
-                    FROM review r
-                    INNER JOIN establishment e ON r.estno = e.estno  -- Adjust column names if needed
-                    WHERE e.estname LIKE %s
-                """
-            values = ("%" + est_name + "%",)
-        elif choice == '6':
-            return  # Back to menu (assuming a separate menu function)
+        elif choice == '0':
+            return
         else:
             print("Invalid choice. Please try again.")
             self.search_reviews()  # Recursively call for valid input
 
         try:
-            self.cursor.execute(sql, values)
+            self.cursor.execute(sql, values) # Execute sql and values
             results = self.cursor.fetchall()
             formatted_reviews = self.display_review_results(results)  # Call display_review_results
 
@@ -497,7 +473,9 @@ class FoodReviewCLI:
                 show_reviews = "y"
                 if show_reviews.lower() == 'y':
                     print(formatted_reviews)
-            return  # Avoid unintended continuation
+            else:
+                print("There are no reviews that match your criteria.")
+            return
         except Exception as e:
             print(f"An error occurred during search: {e}")
 
