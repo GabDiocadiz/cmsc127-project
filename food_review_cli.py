@@ -11,9 +11,11 @@ def clear():
         _ = system('clear')
 
 class FoodReviewCLI:
-    # Function to connect to database
+    # Create and set a global variable current user number and set to default
     global current_userno
     current_userno = None
+
+    # Function to connect to database
     def __init__(self, host, user, password, database):
         try:
             self.connection = mysql.connector.connect(
@@ -29,10 +31,8 @@ class FoodReviewCLI:
             exit()
         self.authenticated = False
 
+    # Function for the user sign-in Menu
     def authentication_menu(self):
-        global current_userno
-        current_userno = None
-        self.authenticated = False
         while not self.authenticated:
             clear()
             width = 40
@@ -59,6 +59,7 @@ class FoodReviewCLI:
                 print("Invalid choice. Please try again.")
                 input("Press Enter to proceed")
 
+    # Function for the Main Menu
     def main_menu(self):
         global current_userno
         while True:
@@ -75,7 +76,6 @@ class FoodReviewCLI:
             print("[0] Exit")
             print("="*40)
             choice = input(">> Enter your choice: ")
-            print("="*40)
 
             if choice == '1':
                 self.review_management_menu()
@@ -89,6 +89,7 @@ class FoodReviewCLI:
                 self.user_management_menu()
                 if current_userno == None: self.authentication_menu()
             elif choice == '6':
+                self.authenticated = False
                 self.authentication_menu()
             elif choice == '0':
                 print("Exiting Food Review CLI.")
@@ -202,167 +203,187 @@ class FoodReviewCLI:
                 self.update_review()
             elif choice == '3':
                 self.delete_review()
+            elif choice == '4':
+                self.search_reviews()
             elif choice == '0':
                 return
             else:
                 input("Invalid choice. Press Enter to try again.")
-            self.averating()
+                continue
+            
+            if int(choice) in [1, 2, 3, 4]:
+                self.averating()
+                input("Press Enter to proceed back to main menu")
+                return
+            
 
     # Function for the food establishment management
     def establishment_management_menu(self):
-        clear()
-        print("\n" + "="*40)
-        print("    Establishment Management Menu    ")
-        print("="*40)
-        print("[1] Add Establishment")
-        print("[2] Update Establishment")
-        print("[3] Delete Establishment")
-        print("[4] Search Establishment")
-        print("[0] Back to Main Menu")
-        print("="*40)
-        choice = input(">> Enter your choice: ")
-        print("="*40)
+        while True:
+            clear()
+            print("\n" + "="*40)
+            print("    Establishment Management Menu    ")
+            print("="*40)
+            print("[1] Add Establishment")
+            print("[2] Update Establishment")
+            print("[3] Delete Establishment")
+            print("[4] Search Establishment")
+            print("[0] Back to Main Menu")
+            print("="*40)
+            choice = input(">> Enter your choice: ")
+            print("="*40)
 
-        if choice == '1':
-            # Get user input for establishment name
-            estname = input("Enter establishment name: ")
-            self.add_establishment(estname)
-            self.averating()
-        elif choice == '2':
-            # Get existing establishment name for update
-            estname = input("Enter establishment name to update: ")
-            new_estname = input("Enter new establishment name: ")
-            self.update_establishment(new_estname, estname)
-        elif choice == '3':
-            # Get establishment name for deletion
-            estname = input("Enter establishment name to delete: ")
-            self.delete_establishment(estname)
-        elif choice == '4':
-            # Get establishment name for search
-            estname = input("Enter establishment name to search: ")
-            self.search_establishment(estname)
-        elif choice == '0':
-            pass  # Back to main menu
-        else:
-            print("Invalid choice. Please try again.")
-            self.establishment_management_menu()
+            if choice == '1':
+                # Get user input for establishment name
+                estname = input("Enter establishment name: ")
+                self.add_establishment(estname)
+                self.averating()
+            elif choice == '2':
+                # Get existing establishment name for update
+                estname = input("Enter establishment name to update: ")
+                new_estname = input("Enter new establishment name: ")
+                self.update_establishment(new_estname, estname)
+            elif choice == '3':
+                # Get establishment name for deletion
+                estname = input("Enter establishment name to delete: ")
+                self.delete_establishment(estname)
+            elif choice == '4':
+                # Get establishment name for search
+                estname = input("Enter establishment name to search: ")
+                self.search_establishment(estname)
+            elif choice == '0':
+                return
+            else:
+                print("Invalid choice. Please try again.")
+                self.establishment_management_menu()
+            
+            if int(choice) in [1, 2, 3, 4]:
+                input("Press Enter to proceed back to main menu")
+                return
+
 
     # Function for the food item management
     def food_item_management_menu(self):
+        while True:
+            clear()
+            print("\n" + "="*40)
+            print("      Food Item Management Menu      ")
+            print("="*40)
+            print("[1] Add Food Item")
+            print("[2] Update Food Item Price")
+            print("[3] Delete Food Item")
+            print("[4] Search Food Item")
+            print("[0] Back to Main Menu")
+            print("="*40)
+            choice = input(">> Enter your choice: ")
+            print("="*40)
+
+            if choice == '1':
+                # Get user input for food item details (name, price, type, estno)
+                foodname = input("Enter food item name: ")
+                while True:
+                    try:
+                        price = float(input("Enter price: "))
+                        if price >= 0:
+                            break
+                        else:
+                            print("Invalid price. Please enter a non-negative number.")
+                    except ValueError:
+                        print("Invalid input. Please enter a number.")
+                foodtype = input("Enter food type: ")
+                estno = int(input("Enter establishment number: "))
+                self.add_food_item(foodname, price, foodtype, estno)
+                self.averating()
+            elif choice == '2':
+                # Get food item name for price update
+                foodname = input("Enter food item name to update price: ")
+                while True:
+                    try:
+                        new_price = float(input("Enter new price: "))
+                        if new_price >= 0:
+                            self.update_food_item(new_price, foodname)
+                            break
+                        else:
+                            print("Invalid price. Please enter a non-negative number.")
+                    except ValueError:
+                        print("Invalid input. Please enter a number.")
+            elif choice == '3':
+                # Get food item name for deletion
+                foodname = input("Enter food item name to delete: ")
+                self.delete_food_item(foodname)
+            elif choice == '4':
+                self.search_food_items()
+            elif choice == '5':
+                return
+            else:
+                print("Invalid choice. Please try again.")
+                self.food_item_management_menu()
+
+            if int(choice) in [1, 2, 3, 4]:
+                input("Press Enter to proceed back to main menu")
+                return
+
+    # Function for the report generation
+    def report_management_menu(self):
         clear()
         print("\n" + "="*40)
-        print("      Food Item Management Menu      ")
+        print("        Report Generation Menu        ")
         print("="*40)
-        print("[1] Add Food Item")
-        print("[2] Update Food Item Price")
-        print("[3] Delete Food Item")
-        print("[4] Search Food Item")
-        print("[0] Back to Main Menu")
+        print("[1] View all food establishments")
+        print("[2] View all food reviews for an establishment or a food item")
+        print("[3] View all food items from an establishment")
+        print("[4] View all food items from an establishment that belong to a food type {meat | veg | etc.}")
+        print("[5] View all reviews made within a month for an establishment or a food item")
+        print("[6] View all establishments with a high average rating (rating >= 4). (ratings from 1-5; highest is 5)")
+        print("[7] View all food items from an establishment arranged according to price")
+        print("[8] Search food items from any establishment based on a given price range and/or food type")
+        print("[0] Exit")
         print("="*40)
-        choice = input(">> Enter your choice: ")
+        report_choice = input(">> Enter choice: ")
         print("="*40)
 
-        if choice == '1':
-            # Get user input for food item details (name, price, type, estno)
-            foodname = input("Enter food item name: ")
-            while True:
-                try:
-                    price = float(input("Enter price: "))
-                    if price >= 0:
-                        break
-                    else:
-                        print("Invalid price. Please enter a non-negative number.")
-                except ValueError:
-                    print("Invalid input. Please enter a number.")
-            foodtype = input("Enter food type: ")
-            estno = int(input("Enter establishment number: "))
-            self.add_food_item(foodname, price, foodtype, estno)
-            self.averating()
-        elif choice == '2':
-            # Get food item name for price update
-            foodname = input("Enter food item name to update price: ")
-            while True:
-                try:
-                    new_price = float(input("Enter new price: "))
-                    if new_price >= 0:
-                        self.update_food_item(new_price, foodname)
-                        break
-                    else:
-                        print("Invalid price. Please enter a non-negative number.")
-                except ValueError:
-                    print("Invalid input. Please enter a number.")
-        elif choice == '3':
-            # Get food item name for deletion
-            foodname = input("Enter food item name to delete: ")
-            self.delete_food_item(foodname)
-        elif choice == '4':
-            self.search_food_items()
-        elif choice == '5':
-            pass  # Back to main menu
+        if int(report_choice) in [1, 2, 3, 4, 5, 6, 7, 8]:
+            clear()
+
+        if report_choice == '0':
+            print("Going back to main menu")
+            return
+        elif report_choice == '1':
+            clear()
+            self.show_food_establishments()
+        elif report_choice == '2':
+            clear()
+            self.show_reviews()
+        elif report_choice == '3':
+            self.show_food_items_from_establishment()
+        elif report_choice == '4':
+            self.show_food_items_from_establishment_and_food_type()
+        elif report_choice == '5':
+            self.show_reviews_within_month()
+        elif report_choice == '6':
+            self.show_establishments_with_high_average_rating()
+        elif report_choice == '7':
+            clear()
+            self.view_food_from_est_by_price()
+        elif report_choice == '8':
+            clear()
+            self.view_food_based_on_criteria()
         else:
-            print("Invalid choice. Please try again.")
-            self.food_item_management_menu()
+            input("Invalid choice. Press Enter to proceed")
+            self.report_management_menu()
 
-    def search_food_items(self):
-        print("\nSearch Food Items:")
-        search_term = input("Enter search term (by name or type): ")
-
-        try:
-            cursor = self.connection.cursor()
-
-            # Prepare SQL query using wildcards for partial matches
-            sql = f"""
-                SELECT f.foodno, f.foodname, f.averating, f.price, f.foodtype, e.estname
-                FROM food f
-                INNER JOIN establishment e ON f.estno = e.estno
-                WHERE f.foodname LIKE %s OR f.foodtype LIKE %s
-            """
-            values = ("%" + search_term + "%", "%" + search_term + "%")  # Match food name or type
-
-            cursor.execute(sql, values)
-            results = cursor.fetchall()
-
-            if results:
-                # Prepare data for table
-                food_data = []
-                for food_item in results:
-                    food_data.append({
-                        "Food ID": food_item[0],
-                        "Food Name": food_item[1],
-                        "Average Rating": food_item[2],
-                        "Price": f"{food_item[3]:.2f}",  # Format price with two decimal places
-                        "Food Type": food_item[4],
-                        "Establishment": food_item[5],
-                    })
-
-                # Print food_data for verification (optional)
-                # print(food_data)
-                table_headers = {
-                                    "Food ID": "Food ID",
-                                    "Food Name": "Food Name",
-                                    "Average Rating": "Average Rating",
-                                    "Price": "Price",
-                                    "Food Type": "Food Type",
-                                    "Establishment": "Establishment",
-                                }
-                # Directly pass list of strings for headers
-                food_table = tabulate(food_data, headers=table_headers, tablefmt="grid")
-
-                print("\nSearch Results:")
-                print(food_table)
-            else:
-                print("No food items found matching your search.")
-
-        except Exception as e:
-            print(f"An error occurred during search: {e}")
+        if int(report_choice) in [0, 1, 2, 3, 4, 5, 6, 7, 8]:
+            input("Press Enter to proceed back to main menu")
+            self.main_menu()
 
 
-        def close(self):
-            self.cursor.close()
-            self.connection.close()
+    def close(self):
+        self.cursor.close()
+        self.connection.close()
 
-    # Function for the food review management
-    # Review Management Functions
+    ###############################
+    # Review Management Functions #
+    ###############################
 
     def search_reviews(self):
         print("\nSearch Reviews:")
@@ -508,7 +529,8 @@ class FoodReviewCLI:
 
     def add_review(self):
         global current_userno
-        # Get user input for review details (text, rating, date, estno)
+        # Get user input for review details (text, rating, date, estno) then validate
+        print("You are creating a new review.\n")
         while True:
             try:
                 rating = int(input("Enter rating (1-5): "))
@@ -521,14 +543,14 @@ class FoodReviewCLI:
         text = input("Enter review text: ")
         date = input("Enter date (DD-MM-YYYY): ")
         try:
-            foodno = input("\nAre you reviewing a food item? \nEnter the food no if yes, 0 if no: ")
+            foodno = int(input("\nAre you reviewing a food item? \nEnter the food no if yes, 0 if no: "))
         except ValueError:
-            input("Invalid input. Press enter to return")
+            print("Food number must be a number.")
             return
         try:
             estno = int(input("Enter establishment number: "))
         except ValueError:
-            input("Invalid input. Press enter to return")
+            print("Establishment number must be a number.")
             return
 
         try:
@@ -543,43 +565,43 @@ class FoodReviewCLI:
                 cursor.execute(check_food_query, (foodno, estno))
                 food_exists = cursor.fetchone()
             else:
+                
                 food_exists = True
 
-            if not est_exists or not food_exists:
+            if not est_exists:
                 raise ValueError("Invalid establishment ID.")
+            if foodno != 0 and not food_exists:
+                raise ValueError("Invalid food ID.")
 
             # Insert review
-            if foodno != '0':
-                sql = """INSERT INTO review (text, rating, date, foodno, estno, userno)
-                        VALUES (%s, %s, STR_TO_DATE(%s, '%d-%m-%Y'), %s, %s, %s)"""
-                self.cursor.execute(sql, (text, rating, date, foodno, estno, current_userno))
-                self.connection.commit()
-            else:
-                sql = """INSERT INTO review (text, rating, date, foodno, estno, userno)
-                        VALUES (%s, %s, STR_TO_DATE(%s, '%d-%m-%Y'), %s, %s, %s)"""
-                self.cursor.execute(sql, (text, rating, date, None, estno, current_userno))
-                self.connection.commit()
+            if foodno == 0: foodno = None
+            sql = """INSERT INTO review (text, rating, date, foodno, estno, userno)
+                    VALUES (%s, %s, STR_TO_DATE(%s, '%d-%m-%Y'), %s, %s, %s)"""
+            self.cursor.execute(sql, (text, rating, date, foodno, estno, current_userno))
+            self.connection.commit()
             print("Review added successfully!")
         except ValueError as e:
             print(f"Error adding review: {e}")
         except mysql.connector.Error as err:
             print(f"Error adding review: {err}")
-        input("\nPress Enter to continue.")
 
+    # Function to update a food review
     def update_review(self):
         global current_userno
-        print("You are going to update a review.")
-        # Get review ID for update
+        print("You are going to update a food review.")
+        # Get review ID for update and verify if the current user is the reviewer
         try:
             reviewno = int(input("Enter review ID to update: "))
         except ValueError:
-            input("Invalid input. Press enter to return")
+            print("Invalid input.")
             return
-
         self.cursor.execute("SELECT userno FROM review WHERE reviewno = %s", (reviewno,))
         review_userno = self.cursor.fetchone()
+        if review_userno == None: 
+            print("Invalid review number.")
+            return
         if current_userno != review_userno[0]:
-            input("This is not your review, You are unable update this.\nPress Enter to return.")
+            print("This is not your review, You are unable to update this.")
             return
 
         # Prompt user for specific update (text, rating, estno, foodno) then validate
@@ -613,10 +635,10 @@ class FoodReviewCLI:
                     self.cursor.execute("SELECT estno FROM food WHERE foodno = %s", (new_food_no,))
                     food_estno = self.cursor.fetchone()
                     if review_estno != food_estno:
-                        input("Invalid food number. Press Enter to return.")
+                        print("Invalid food number.")
                         return
             except ValueError:
-                input("Invalid input. Press enter to return")
+                print("Invalid input.")
                 return
         elif update_choice == '4':
             try:
@@ -624,17 +646,17 @@ class FoodReviewCLI:
                 self.cursor.execute("SELECT estno FROM review WHERE reviewno = %s", (new_est_no,))
                 valid_new_estno = self.cursor.fetchone()
                 if not valid_new_estno:
-                    input("Invalid establishment number. Press Enter to return.")
+                    print("Invalid establishment number.")
                     return
                 new_food_no = int(input("Are you reviewing a food item? \nEnter the food no if yes, 0 if no: "))
                 if new_food_no != 0:
                     self.cursor.execute("SELECT estno FROM food WHERE foodno = %s", (new_food_no,))
                     food_estno = self.cursor.fetchone()
                     if new_est_no != food_estno:
-                        input("Invalid food number. Press Enter to return.")
+                        print("Invalid food number.")
                         return
             except ValueError:
-                input("Invalid input. Press enter to return")
+                print("Invalid input.")
                 return
         else:
             print("Invalid choice. Please try again.")
@@ -647,17 +669,17 @@ class FoodReviewCLI:
                 self.cursor.execute("UPDATE review SET rating = %s WHERE reviewno = %s", (new_rating, reviewno))
                 self.connection.commit()
             elif update_choice == "3":
-                if new_food_no == '0': new_food_no = None
+                if new_food_no == 0: new_food_no = None
                 self.cursor.execute("UPDATE review SET foodno = %s WHERE reviewno = %s", (new_food_no, reviewno))
                 self.connection.commit()
             elif update_choice == "4":
-                if new_food_no == '0': new_food_no = None
+                if new_food_no == 0: new_food_no = None
                 self.cursor.execute("UPDATE review SET estno = %s, foodno = %s WHERE reviewno = %s", (new_est_no, new_food_no, reviewno))
                 self.connection.commit()
-            print("Review updated successfully!")
+            if int(update_choice) in [1, 2, 3, 4]:
+                print("Review updated successfully!")
         except mysql.connector.Error as err:
             print(f"Error updating review: {err}")
-            input("Press enter to return")
             return
 
     def delete_review(self):
@@ -683,11 +705,14 @@ class FoodReviewCLI:
             sql = "DELETE FROM review WHERE reviewno = %s"
             self.cursor.execute(sql, (reviewno,))
             self.connection.commit()
-            input("Review deleted successfully!")
+            print("Review deleted successfully!")
         except mysql.connector.Error as err:
             print(f"Error deleting review: {err}")
 
-    # Establishment Management Functions
+    ######################################
+    # Establishment Management Functions #
+    ######################################
+
     # Function to add an establishment
     def add_establishment(self, estname):
         try:
@@ -715,17 +740,7 @@ class FoodReviewCLI:
                 print("Deletion cancelled.")
                 return
 
-            # Delete reviews referencing the establishment
-            sql = "DELETE FROM review WHERE estno = %s"
-            self.cursor.execute(sql, (estno[0],))  # Use first element of estno tuple
-            self.connection.commit()
-
-            # Delete food items belonging to the establishment
-            sql = "DELETE FROM food WHERE estno = %s"
-            self.cursor.execute(sql, (estno[0],))
-            self.connection.commit()
-
-            # Delete the establishment itself
+            # Delete the establishment
             sql = "DELETE FROM establishment WHERE estname = %s"
             self.cursor.execute(sql, (estname,))
             self.connection.commit()
@@ -770,7 +785,20 @@ class FoodReviewCLI:
         except mysql.connector.Error as err:
             print(f"Error updating establishment: {err}")
 
-    # Food Item Management Functions
+    ##################################
+    # Food Item Management Functions #
+    ##################################
+
+    def add_food_item(self, foodname, price, foodtype, estno):
+        try:
+            sql = "INSERT INTO food (foodname, price, foodtype, estno) VALUES (%s, %s, %s, %s)"
+            self.cursor.execute(sql, (foodname, price, foodtype, estno))
+            self.connection.commit()
+            print("Food item added successfully!")
+        except mysql.connector.Error as err:
+            print(f"Error adding food item: {err}")
+
+
     # Function to search for a food item
     def search_food_item(self, search_term):
         try:
@@ -782,7 +810,6 @@ class FoodReviewCLI:
             cursor = self.connection.cursor()
             cursor.execute(search_query, ("%" + search_term + "%",))
             results = cursor.fetchall()
-
 
             if not results:
                 print(f"No food items found matching '{search_term}'.")
@@ -796,7 +823,6 @@ class FoodReviewCLI:
                 
                 print(tabulate(table, headers=headers, tablefmt="grid"))
 
-
         except mysql.connector.Error as err:
             print(f"Error searching food items: {err}")
 
@@ -808,7 +834,6 @@ class FoodReviewCLI:
             if confirm.lower() != 'y':
                 print("Deletion cancelled.")
                 return
-
 
             # Delete the food item
             sql = "DELETE FROM food WHERE foodname = %s"
@@ -835,57 +860,65 @@ class FoodReviewCLI:
             print(f"Error: {e}")
         except mysql.connector.Error as err:
             print(f"Error updating food item price: {err}")
-    
-    def report_management_menu(self):
-        clear()
-        print("\n" + "="*40)
-        print("        Report Generation Menu        ")
-        print("="*40)
-        print("[1] View all food establishments")
-        print("[2] View all food reviews for an establishment or a food item")
-        print("[3] View all food items from an establishment")
-        print("[4] View all food items from an establishment that belong to a food type {meat | veg | etc.}")
-        print("[5] View all reviews made within a month for an establishment or a food item")
-        print("[6] View all establishments with a high average rating (rating >= 4). (ratings from 1-5; highest is 5)")
-        print("[7] View all food items from an establishment arranged according to price")
-        print("[8] Search food items from any establishment based on a given price range and/or food type")
-        print("[0] Exit")
-        print("="*40)
-        report_choice = input(">> Enter choice: ")
-        print("="*40)
 
-        if report_choice == '0':
-            print("Going back to main menu")
-            return
-        elif report_choice == '1':
-            clear()
-            self.show_food_establishments()
-        elif report_choice == '2':
-            clear()
-            self.show_reviews()
-        elif report_choice == '3':
-            self.show_food_items_from_establishment()
-        elif report_choice == '4':
-            self.show_food_items_from_establishment_and_food_type()
-        elif report_choice == '5':
-            self.show_reviews_within_month()
-        elif report_choice == '6':
-            self.show_establishments_with_high_average_rating()
-        elif report_choice == '7':
-            clear()
-            self.view_food_from_est_by_price()
-        elif report_choice == '8':
-            clear()
-            self.view_food_based_on_criteria()
-        else:
-            input("Invalid choice. Press Enter to proceed")
-            self.report_management_menu()
+    def search_food_items(self):
+        print("\nSearch Food Items:")
+        search_term = input("Enter search term (by name or type): ")
 
-        if int(report_choice) in [0, 1, 2, 3, 4, 5, 6, 7, 8]:
-            input("Press Enter to proceed back to main menu")
-            self.main_menu()
+        try:
+            cursor = self.connection.cursor()
 
-    # 1. View all food establishments
+            # Prepare SQL query using wildcards for partial matches
+            sql = f"""
+                SELECT f.foodno, f.foodname, f.averating, f.price, f.foodtype, e.estname
+                FROM food f
+                INNER JOIN establishment e ON f.estno = e.estno
+                WHERE f.foodname LIKE %s OR f.foodtype LIKE %s
+            """
+            values = ("%" + search_term + "%", "%" + search_term + "%")  # Match food name or type
+
+            cursor.execute(sql, values)
+            results = cursor.fetchall()
+
+            if results:
+                # Prepare data for table
+                food_data = []
+                for food_item in results:
+                    food_data.append({
+                        "Food ID": food_item[0],
+                        "Food Name": food_item[1],
+                        "Average Rating": food_item[2],
+                        "Price": f"{food_item[3]:.2f}",  # Format price with two decimal places
+                        "Food Type": food_item[4],
+                        "Establishment": food_item[5],
+                    })
+
+                # Print food_data for verification (optional)
+                # print(food_data)
+                table_headers = {
+                                    "Food ID": "Food ID",
+                                    "Food Name": "Food Name",
+                                    "Average Rating": "Average Rating",
+                                    "Price": "Price",
+                                    "Food Type": "Food Type",
+                                    "Establishment": "Establishment",
+                                }
+                # Directly pass list of strings for headers
+                food_table = tabulate(food_data, headers=table_headers, tablefmt="grid")
+
+                print("\nSearch Results:")
+                print(food_table)
+            else:
+                print("No food items found matching your search.")
+
+        except Exception as e:
+            print(f"An error occurred during search: {e}")
+
+    ###############################
+    # Report Generation Functions #
+    ###############################
+
+    # Function to view all food establishments
     def show_food_establishments(self):
         cursor = self.connection.cursor()
         cursor.execute("SELECT estno, estname FROM establishment ORDER BY estno")
@@ -898,7 +931,7 @@ class FoodReviewCLI:
             print("No establishments found.")
         print("\n")
 
-    # 2. View all food reviews for an establishment or a food item
+    # Function to view all food reviews for an establishment or a food item
     def show_reviews(self):
         clear()
         print("Would you like to view the reviews of  ")
