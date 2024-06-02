@@ -954,15 +954,15 @@ class FoodReviewCLI:
         print("\n" + "="*40)
         print("          User Generation Menu          ")
         print("="*40)
-        print("[0] Return to main menu")
         print("[1] View all Users")
         print("[2] Create a new user")
         print("[3] Update password")
         print("[4] Delete user")
+        print("[0] Return to main menu")
         print("="*40)
         report_choice = input(">> Enter choice: ")
         print("="*40)
-        
+
         if report_choice == '0':
             print("Returning to main menu")
             self.main_menu()
