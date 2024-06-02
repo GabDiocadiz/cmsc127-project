@@ -66,12 +66,17 @@ class FoodReviewCLI:
 
     # Function for the review management
     def review_management_menu(self):
-        print("\nReview Management Menu:")
-        print("1. Add Review")
-        print("2. Update Review")
-        print("3. Delete Review")
-        print("4. Back to Main Menu")
-        choice = input("Enter your choice: ")
+        clear()
+        print("\n" + "="*40)
+        print("        Review Management Menu        ")
+        print("="*40)
+        print("[1] Add Review")
+        print("[2] Update Review")
+        print("[3] Delete Review")
+        print("[0] Back to Main Menu")
+        print("="*40)
+        choice = input(">> Enter your choice: ")
+        print("="*40)
 
         if choice == '1':
             # Get user input for review details (text, rating, date, estno, userno)
@@ -126,7 +131,7 @@ class FoodReviewCLI:
             reviewno = int(input("Enter review ID to delete: "))
             self.delete_review(reviewno)
             self.averating()
-        elif choice == '4':
+        elif choice == '0':
             pass  # Back to main menu
         else:
             clear()
@@ -135,13 +140,18 @@ class FoodReviewCLI:
 
     # Function for the food establishment management
     def establishment_management_menu(self):
-        print("\nEstablishment Management Menu:")
-        print("1. Add Establishment")
-        print("2. Update Establishment")
-        print("3. Delete Establishment")
-        print("4. Search Establishment")
-        print("5. Back to Main Menu")
-        choice = input("Enter your choice: ")
+        clear()
+        print("\n" + "="*40)
+        print("    Establishment Management Menu    ")
+        print("="*40)
+        print("[1] Add Establishment")
+        print("[2] Update Establishment")
+        print("[3] Delete Establishment")
+        print("[4] Search Establishment")
+        print("[0] Back to Main Menu")
+        print("="*40)
+        choice = input(">> Enter your choice: ")
+        print("="*40)
 
         if choice == '1':
             # Get user input for establishment name
@@ -161,7 +171,7 @@ class FoodReviewCLI:
             # Get establishment name for search
             estname = input("Enter establishment name to search: ")
             self.search_establishment(estname)
-        elif choice == '5':
+        elif choice == '0':
             pass  # Back to main menu
         else:
             print("Invalid choice. Please try again.")
@@ -169,13 +179,18 @@ class FoodReviewCLI:
 
     # Function for the food item management
     def food_item_management_menu(self):
-        print("\nFood Item Management Menu:")
-        print("1. Add Food Item")
-        print("2. Update Food Item Price")
-        print("3. Delete Food Item")
-        print("4. Search Food Item")
-        print("5. Back to Main Menu")
-        choice = input("Enter your choice: ")
+        clear()
+        print("\n" + "="*40)
+        print("      Food Item Management Menu      ")
+        print("="*40)
+        print("[1] Add Food Item")
+        print("[2] Update Food Item Price")
+        print("[3] Delete Food Item")
+        print("[4] Search Food Item")
+        print("[0] Back to Main Menu")
+        print("="*40)
+        choice = input(">> Enter your choice: ")
+        print("="*40)
 
         if choice == '1':
             # Get user input for food item details (name, price, type, estno)
@@ -215,7 +230,7 @@ class FoodReviewCLI:
             foodname = input("Enter food item name to search: ")
             # Implement search logic using appropriate SQL queries
             print("Search functionality for food items is not yet implemented.")
-        elif choice == '5':
+        elif choice == '0':
             pass  # Back to main menu
         else:
             print("Invalid choice. Please try again.")
@@ -462,18 +477,23 @@ class FoodReviewCLI:
     
     def report_management_menu(self):
         clear()
-        print("Report Generation Menu:")
-        print("1. View all food establishments")
-        print("2. View all food reviews for an establishment or a food item")
-        print("3. View all food items from an establishment")
-        print("4. View all food items from an establishment that belong to a food type {meat | veg | etc.}")
-        print("5. View all reviews made within a month for an establishment or a food item")
-        print("6. View all establishments with a high average rating (rating >= 4). (ratings from 1-5; highest is 5)")
-        print("7. View all food items from an establishment arranged according to price")
-        print("8. Search food items from any establishment based on a given price range and/or food type")
-        print("9. Exit")
-        report_choice = (input("Enter choice: "))
-        if report_choice == '9':
+        print("\n" + "="*40)
+        print("        Report Generation Menu        ")
+        print("="*40)
+        print("[1] View all food establishments")
+        print("[2] View all food reviews for an establishment or a food item")
+        print("[3] View all food items from an establishment")
+        print("[4] View all food items from an establishment that belong to a food type {meat | veg | etc.}")
+        print("[5] View all reviews made within a month for an establishment or a food item")
+        print("[6] View all establishments with a high average rating (rating >= 4). (ratings from 1-5; highest is 5)")
+        print("[7] View all food items from an establishment arranged according to price")
+        print("[8] Search food items from any establishment based on a given price range and/or food type")
+        print("[0] Exit")
+        print("="*40)
+        report_choice = input(">> Enter choice: ")
+        print("="*40)
+
+        if report_choice == '0':
             print("Going back to main menu")
             self.main_menu()
         elif report_choice == '1':
@@ -500,7 +520,7 @@ class FoodReviewCLI:
             input("Invalid choice. Press Enter to proceed")
             self.report_management_menu()
 
-        if int(report_choice) in [1, 2, 3, 4, 5, 6, 7, 8, 9]:
+        if int(report_choice) in [1, 2, 3, 4, 5, 6, 7, 8]:
             input("Press Enter to proceed back to main menu")
             self.main_menu()
 
@@ -911,13 +931,18 @@ class FoodReviewCLI:
 
     def user_management_menu(self):
         clear()
-        print("User Generation Menu:")
-        print("0. Return to main menu")
-        print("1. View all Users")
-        print("2. Create a new user")
-        print("3. Update password")
-        print("4. Delete user")
-        report_choice = (input("Enter choice: "))
+        print("\n" + "="*40)
+        print("          User Generation Menu          ")
+        print("="*40)
+        print("[0] Return to main menu")
+        print("[1] View all Users")
+        print("[2] Create a new user")
+        print("[3] Update password")
+        print("[4] Delete user")
+        print("="*40)
+        report_choice = input(">> Enter choice: ")
+        print("="*40)
+        
         if report_choice == '0':
             print("Returning to main menu")
             self.main_menu()
