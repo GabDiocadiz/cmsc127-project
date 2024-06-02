@@ -34,14 +34,18 @@ class FoodReviewCLI:
     def main_menu(self):
         while True:
             clear()
-            print("\nFood Review CLI Menu:")
-            print("1. Review Management")
-            print("2. Establishment Management")
-            print("3. Food Item Management")
-            print("4. Report Generation")
-            print("5. User Management")
-            print("6. Exit")
-            choice = input("Enter your choice: ")
+            print("\n" + "="*40)
+            print("          Main Menu - Food Review          ")
+            print("="*40)
+            print("[1] Review Management")
+            print("[2] Establishment Management")
+            print("[3] Food Item Management")
+            print("[4] Report Generation")
+            print("[5] User Management")
+            print("[0] Exit")
+            print("="*40)
+            choice = input(">> Enter your choice: ")
+            print("="*40)
 
             if choice == '1':
                 self.review_management_menu()
@@ -53,7 +57,7 @@ class FoodReviewCLI:
                 self.report_management_menu()
             elif choice == '5':
                 self.user_management_menu()
-            elif choice == '6':
+            elif choice == '0':
                 print("Exiting Food Review CLI.")
                 exit()
             else:
