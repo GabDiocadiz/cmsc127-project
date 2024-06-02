@@ -1008,7 +1008,7 @@ class FoodReviewCLI:
             self.user_management_menu()
         else:
             cursor.execute("DELETE from user WHERE userno = %s", (userno,))
-            input("User successfully Deleted. Press Enter to return.")
+            print("User successfully Deleted.")
 
 ################################
 
