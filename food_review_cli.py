@@ -63,8 +63,7 @@ class FoodReviewCLI:
         print("1. Add Review")
         print("2. Update Review")
         print("3. Delete Review")
-        print("4. Search Reviews")
-        print("5. Back to Main Menu")
+        print("4. Back to Main Menu")
         choice = input("Enter your choice: ")
 
         if choice == '1':
@@ -121,10 +120,6 @@ class FoodReviewCLI:
             self.delete_review(reviewno)
             self.averating()
         elif choice == '4':
-            # Allow searching by various criteria (text, rating, establishment, etc.)
-            # Implement search logic using appropriate SQL queries
-            print("Search functionality for reviews is not yet implemented.")
-        elif choice == '5':
             pass  # Back to main menu
         else:
             clear()
@@ -381,7 +376,7 @@ class FoodReviewCLI:
         except mysql.connector.Error as err:
             print(f"Error searching establishments: {err}")
 
-    # Function to update and establishment
+    # Function to update an establishment
     def update_establishment(self, new_estname, estname):
         try:
             sql = "UPDATE establishment SET estname = %s WHERE estname = %s"
