@@ -98,12 +98,29 @@ class FoodReviewCLI:
             print("[0] Back to previous menu")
             username = input("Enter username: ")
             if username == '0':
-                return  # Exit the sign-up process and return to the previous menu
+                return 
+
+            # Check if username is unique
+            try:
+                cursor = self.connection.cursor()
+                cursor.execute("SELECT * FROM user WHERE username = %s", (username,))
+                if cursor.fetchone():
+                    print("Username already exists. Please choose a different username.")
+                    input("Press Enter to proceed")
+                    continue
+            except mysql.connector.Error as err:
+                print(f"Error checking username: {err}")
+                input("Press Enter to proceed")
+                continue
+
             password = input("Enter password: ")
+            if not password:
+                print("Password cannot be blank. Please try again.")
+                input("Press Enter to proceed")
+                continue
             print("="*width)
             
             try:
-                cursor = self.connection.cursor()
                 cursor.execute("INSERT INTO `user` (`username`, `password`) VALUES (%s, %s)", (username, password))
                 self.connection.commit()
                 print("User successfully created.")
@@ -124,7 +141,7 @@ class FoodReviewCLI:
             print("[0] Back to previous menu")
             username = input("Enter username: ")
             if username == '0':
-                return False 
+                return False
             password = input("Enter password: ")
             print("="*width)
 
