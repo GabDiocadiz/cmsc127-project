@@ -99,6 +99,11 @@ class FoodReviewCLI:
             username = input("Enter username: ")
             if username == '0':
                 return 
+            
+            if not username:
+                print("Username cannot be blank. Please try again.")
+                input("Press Enter to proceed")
+                continue
 
             # Check if username is unique
             try:
@@ -186,7 +191,7 @@ class FoodReviewCLI:
             elif choice == '3':
                 self.delete_review()
             elif choice == '0':
-                pass  # Back to main menu
+                return
             else:
                 input("Invalid choice. Press Enter to try again.")
 
