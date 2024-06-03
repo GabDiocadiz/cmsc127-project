@@ -29,3 +29,9 @@ The system can generate the following reports:
 - Agub, Reijel C.
 - Pekas, David Avery T.
 - Diocadiz, Gabrielle Therese D.
+
+## Installation
+To run this project, you need to install the following Python packages:
+
+```bash
+pip install datetime mysql-connector-python tabulate
