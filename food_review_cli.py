@@ -1251,12 +1251,12 @@ class FoodReviewCLI:
     # 8. Function to search for food based on criteria
     def view_food_based_on_criteria(self):
         self.show_food_establishments()
-        est_number = (input("From what establishment would you like to browse by price: "))
+        est_number = (input("From what establishment number would you like to search: "))
 
         # Validate establishment number
-        if not est_number.isdigit():
+        if not est_number.isdigit() or not est_number:
             print("Invalid choice.")
-            self.report_management_menu()
+            return
         else:
             est_number = int(est_number)
         cursor = self.connection.cursor()
@@ -1267,7 +1267,6 @@ class FoodReviewCLI:
             if est_number == unit[0]:
                 valid = True
                 break
-
         if not valid:
             print("Invalid establishment number.")
             return
