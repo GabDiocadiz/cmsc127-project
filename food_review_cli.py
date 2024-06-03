@@ -1,5 +1,5 @@
 import mysql.connector
-import datetime
+from datetime import datetime
 from tabulate import tabulate
 from os import system, name
 
@@ -602,12 +602,21 @@ class FoodReviewCLI:
             except ValueError:
                 print("Invalid input. Please enter a number.")
         text = input("Enter review text: ")
-        date = input("Enter date (DD-MM-YYYY): ")
+
+        while True:
+            date = input("Enter date (DD-MM-YYYY): ")
+            try:
+                datetime.strptime(date, "%d-%m-%Y")
+                break
+            except ValueError:
+                print("Invalid date format. Please enter the date in DD-MM-YYYY format.")
+
         try:
-            foodno = int(input("\nAre you reviewing a food item? \nEnter the food no if yes, 0 if no: "))
+            foodno = int(input("\nAre you reviewing a food item? \nEnter the food number if yes, 0 if no: "))
         except ValueError:
             print("Food number must be a number.")
             return
+        
         try:
             estno = int(input("Enter establishment number: "))
         except ValueError:
@@ -615,7 +624,7 @@ class FoodReviewCLI:
             return
 
         try:
-            # Check if establishment
+            # Check if establishment is valid
             cursor = self.connection.cursor()
             check_est_query = "SELECT estno FROM establishment WHERE estno = %s"
             cursor.execute(check_est_query, (estno,))
@@ -626,7 +635,6 @@ class FoodReviewCLI:
                 cursor.execute(check_food_query, (foodno, estno))
                 food_exists = cursor.fetchone()
             else:
-                
                 food_exists = True
 
             if not est_exists:
