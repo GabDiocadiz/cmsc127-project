@@ -617,33 +617,39 @@ class FoodReviewCLI:
             print("Food number must be a number.")
             return
         
-        try:
-            estno = int(input("Enter establishment number: "))
-        except ValueError:
-            print("Establishment number must be a number.")
-            return
+        if foodno == 0:
+            # Get establishment number for review and validate
+            foodno = None
+            try:
+                estno = int(input("Enter establishment number: "))
+                cursor = self.connection.cursor()
+                check_est_query = "SELECT estno FROM establishment WHERE estno = %s"
+                cursor.execute(check_est_query, (estno,))
+                est_exists = cursor.fetchone()
+                if not est_exists:
+                    raise ValueError("Invalid establishment ID.")
+            except ValueError as e:
+                print(f"Error adding review: {e}")
+                return
+        else: # Auto fetch establishment number from valid food number
+            try:
+                get_estno_query = "SELECT estno FROM food WHERE foodno = %s"
+                cursor = self.connection.cursor()
+                cursor.execute(get_estno_query, (foodno,))
+                est_exists = cursor.fetchone()
+                if not est_exists:
+                    raise ValueError("Invalid food ID.")
+                else:
+                    estno = est_exists[0]
+            except ValueError as e:
+                print(f"Error adding review: {e}")
+                return
+            except mysql.connector.Error as err:
+                print(f"Error adding review: {err}")
+                return
 
         try:
-            # Check if establishment is valid
-            cursor = self.connection.cursor()
-            check_est_query = "SELECT estno FROM establishment WHERE estno = %s"
-            cursor.execute(check_est_query, (estno,))
-            est_exists = cursor.fetchone()
-            # Check if the food belongs to the establishment from the review
-            if foodno != '0':
-                check_food_query = "SELECT foodno FROM food WHERE foodno = %s and estno =%s"
-                cursor.execute(check_food_query, (foodno, estno))
-                food_exists = cursor.fetchone()
-            else:
-                food_exists = True
-
-            if not est_exists:
-                raise ValueError("Invalid establishment ID.")
-            if foodno != 0 and not food_exists:
-                raise ValueError("Invalid food ID.")
-
             # Insert review
-            if foodno == 0: foodno = None
             sql = """INSERT INTO review (text, rating, date, foodno, estno, userno)
                     VALUES (%s, %s, STR_TO_DATE(%s, '%d-%m-%Y'), %s, %s, %s)"""
             self.cursor.execute(sql, (text, rating, date, foodno, estno, current_userno))
