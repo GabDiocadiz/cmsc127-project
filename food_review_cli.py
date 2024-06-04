@@ -73,7 +73,7 @@ class FoodReviewCLI:
             print("Sign Up".center(width))
             print("="*width)
             print("[0] Back to previous menu")
-            username = input("Enter username: ")
+            username = input("Enter username: ").strip()
             if username == '0':
                 return 
             
@@ -95,7 +95,7 @@ class FoodReviewCLI:
                 input("Press Enter to proceed")
                 continue
 
-            password = input("Enter password: ")
+            password = input("Enter password: ").strip()
             if not password:
                 print("Password cannot be blank. Please try again.")
                 input("Press Enter to proceed")
@@ -122,10 +122,19 @@ class FoodReviewCLI:
             print("Sign In".center(width))
             print("="*width)
             print("[0] Back to previous menu")
-            username = input("Enter username: ")
+            username = input("Enter username: ").strip()
             if username == '0':
                 return False
-            password = input("Enter password: ")
+            if not username:
+                print("Username cannot be blank. Please try again.")
+                input("Press Enter to proceed")
+                continue
+
+            password = input("Enter password: ").strip()
+            if not password:
+                print("Password cannot be blank. Please try again.")
+                input("Press Enter to proceed")
+                continue
             print("="*width)
 
             try:
